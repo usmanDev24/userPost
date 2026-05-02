@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "dotenvx run --env-file=.env.production bun ./dist/app.mjs",
+    "start": "dotenvx run -f .env.production -- bun ./dist/app.mjs",
     "dev": "dotenvx run -f .env.development --debug -- bun ./src/app.mjs",
     "watch": "tailwindcss -i ./src/public/assets/stylesheets/input.css -o ./src/public/assets/stylesheets/styles.css --watch --minify",
     "prisma-dev": "dotenvx run --env-file=.env.development -- prisma --config=./src/prisma.config.ts",

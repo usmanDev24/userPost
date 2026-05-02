@@ -19,11 +19,15 @@ incus exec $CONTAINER_NAME -- bash << 'EOF'
 
   curl -fsSL https://deb.nodesource.com/setup_24.x | bash - && \
   apt-get install -y nodejs && \
-  npm install --global corepack@latest && \
-  
-  curl -fsSL https://bun.sh/install | bash - && \
+
+  if command -v ./.bun/bin/bun &> /dev/null ; than
+    echo "Bun already installed"
+  else 
+    echo "Installing bun"
+    curl -fsSL https://bun.sh/install | bash - 
+  fi
   source /root/.bashrc
-  bun --help 
+  bun --version
   nodejs -v
   npm -v 
 
@@ -31,8 +35,6 @@ incus exec $CONTAINER_NAME -- bash << 'EOF'
   pm2 -v
 EOF
 
-
-insus exec $CONTAINER_NAME -- curl -fsSL https://dotenvx.sh | sh -
 
 # -s flag hides the input (silent mode) so the key isn't visible on screen
 # -p flag provides a prompt message
@@ -43,7 +45,7 @@ incus config set $CONTAINER_NAME environment.DOTENV_PRIVATE_KEY_PRODUCTION="$MY_
 unset MY_KEY_PRODUCTION
 
 incus exec $CONTAINER_NAME -- bash << 'EOF'
-  cd ~ 
+  cd /root/home
   rm -r ./postbase
 
   git clone https://github.com/UsmanDev24/postbase.git && \
@@ -58,7 +60,7 @@ incus exec $CONTAINER_NAME -- bash << 'EOF'
 EOF
 
 incus exec $CONTAINER_NAME -- bash << 'EOF'
-  cd ~ 
+  cd /root/home
   rm -r ./postbase-user-api
   git clone https://github.com/UsmanDev24/postbase-user-api.git && \
   
