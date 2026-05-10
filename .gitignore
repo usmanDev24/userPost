@@ -5,3 +5,4 @@ src/prisma/generated/prisma
 
 dist
 
+postbase.code-workspace
