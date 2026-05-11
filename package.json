@@ -5,16 +5,17 @@
   "type": "module",
   "scripts": {
     "start": "dotenvx run -f .env.production -- bun ./dist/app.mjs",
-    "dev": "dotenvx run -f .env.development --debug -- bun ./src/app.mjs",
+    "dev": "dotenvx run -f .env.development --debug -- cross-env DEBUG=posts* bun ./src/app.mjs",
     "watch": "tailwindcss -i ./src/public/assets/stylesheets/input.css -o ./src/public/assets/stylesheets/styles.css --watch --minify",
     "prisma-dev": "dotenvx run --env-file=.env.development -- prisma --config=./src/prisma.config.ts",
-    "init-catg-dev": "dotenvx run --env-file=.env.development -- tsx ./src/models/init-categories.mjs",
-    "init-pics-dev": "dotenvx run --env-file=.env.development -- tsx ./src/models/set-prisma-pics.mjs",
-    "build": "bun run pris-gen-pro; bun run pris-push-pro; tsc; bun run copy-assets",
-    "build-dev" : "bun run prisma-dev migrate dev && bun run prisma-dev generate",
+    "prisma-pro": "dotenvx run --env-file=.env.production -- prisma --config=./src/prisma.config.ts",
+
+    "init-catg-dev": "dotenvx run --env-file=.env.development -- bun ./src/models/init-categories.mjs",
+    "init-pics-dev": "dotenvx run --env-file=.env.development -- bun ./src/models/set-prisma-pics.mjs",
+
+    "build": "bun run prisma-pro generate && tsc && bun run copy-assets",
     "copy-assets": "cp -r src/public/assets dist/public; cp -r src/views dist/; cp -r src/partials dist/",
-    "pris-push-pro": "dotenvx run --env-file=.env.production -- bunx --bun prisma db push --config=./src/prisma.config.ts",
-    "pris-gen-pro": "dotenvx run --env-file=.env.production -- bunx --bun prisma generate --config=./src/prisma.config.ts",
+    
     "init-catg-pro": "dotenvx run --env-file=.env.production -- bun ./dist/models/init-categories.mjs ",
     "init-pics-pro": "dotenvx run --env-file=.env.production -- bun ./dist/models/set-prisma-pics.mjs"
   },
@@ -56,7 +57,6 @@
     "@tailwindcss/typography": "^0.5.19",
     "@types/express": "^5.0.6",
     "@types/multer": "^2.1.0",
-    "@types/node": "^24.12.2",
     "@types/pg": "^8.20.0",
     "@types/sanitize-html": "^2.16.1",
     "daisyui": "^5.5.19",
@@ -65,7 +65,6 @@
     "prettier-plugin-tailwindcss": "^0.6.14",
     "prisma": "^7.8.0",
     "tailwindcss": "^4.2.4",
-    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
 }
