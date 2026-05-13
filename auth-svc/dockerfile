@@ -1,24 +1,30 @@
-FROM oven/bun:canary-alpine AS base
-WORKDIR /usr/src/app
+FROM oven/bun:1.3-alpine AS base
+RUN mkdir -p /usr/auth-svc
+WORKDIR /usr/auth-svc
 
-FROM base AS dotenvx
-RUN curl -sfS https://dotenvx.sh | sh
-
-FROM base AS install 
+FROM base AS install
 RUN mkdir -p /temp/dev
 COPY package.json bun.lock /temp/dev
-RUN cd /temp/dev/ && bun install --frozen-lockfile
+RUN cd /temp/dev && bun install --frozen-lockfile
 
-FROM dotenvx AS prerelease
-WORKDIR /usr/src/app
-COPY --from=install /temp/dev/node_modules node_modules
+RUN mkdir -p /temp/prod
+COPY package.json bun.lock /temp/prod
+RUN cd /temp/prod && bun install --frozen-lockfile --production
+
+FROM base AS prerelease
+RUN mkdir /auth-svc
+WORKDIR /auth-svc
+COPY --from=install /temp/dev/node_modules  node_modules
 COPY . .
-RUN --mount=type=secret,id=KEY_DEVELOPMENT,env=DOTENV_PRIVATE_KEY_DEVELOPMENT bun run build-dev
-
-EXPOSE 5858
+RUN  bun run prisma-dev generate
+EXPOSE 5859
 CMD [ "bun", "run", "dev" ]
 
+FROM base AS release
+WORKDIR /usr/auth-svc
+COPY from=install  /temp/prod/node_modules /usr/auth-svc/node_modules
+COPY . .
+RUN bun run build
 
-
-
-
+EXPOSE 5858
+CMD [ "bun", "run" , "start" ]
