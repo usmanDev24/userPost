@@ -22,7 +22,7 @@ CMD [ "bun", "run", "dev" ]
 
 FROM base AS release
 WORKDIR /usr/auth-svc
-COPY from=install  /temp/prod/node_modules /usr/auth-svc/node_modules
+COPY --from=install  /temp/prod/node_modules /usr/auth-svc/node_modules
 COPY . .
 RUN bun run build
 
