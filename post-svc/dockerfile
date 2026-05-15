@@ -21,10 +21,12 @@ EXPOSE 3000
 CMD [ "bun", "run", "dev" ]
 
 FROM base AS release
+RUN curl -sfS https://dotenvx.sh | sh
 WORKDIR /usr/post-svc
 COPY --from=install  /temp/prod/node_modules /usr/post-svc/node_modules
 COPY . .
 RUN bun run build
 
 EXPOSE 3000
-CMD [ "bun", "run" , "start" ]
+CMD [ "dotenvx", "run" , "-f", ".env.production", "--", "bun", "./dist/app.mjs" ]
+

@@ -21,10 +21,11 @@ EXPOSE 5859
 CMD [ "bun", "run", "dev" ]
 
 FROM base AS release
+RUN curl -sfS https://dotenvx.sh | sh
 WORKDIR /usr/auth-svc
 COPY --from=install  /temp/prod/node_modules /usr/auth-svc/node_modules
 COPY . .
 RUN bun run build
 
 EXPOSE 5858
-CMD [ "bun", "run" , "start" ]
+CMD [ "dotenvx", "run" , "-f", ".env.production", "--", "bun", "./dist/user-server.mjs" ]
