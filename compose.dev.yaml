@@ -26,18 +26,28 @@ services:
     depends_on:
       authsvc-build:
         condition: service_completed_successfully
-  
+    develop:
+      watch:
+        - path: ./auth-svc
+          action: sync+restart
+          target: /auth-svc/
+          ignore: 
+            - ./auth-svc/node_modules
+        - path: ./auth-svc/package.json
+          action: rebuild
+
   db-authsvc:
     image: postgres:alpine
     environment: 
-      - POSTGRES_PASSWORD={$AUTH_DB_PASSWORD}
-      - POSTGRES_USER={$AUTH_DB_USER}
-      - POSTGRES_DB={$AUTH_DB}
+      - POSTGRES_PASSWORD=${AUTH_DB_PASS}
+      - POSTGRES_USER=${AUTH_DB_USER}
+      - POSTGRES_DB=${AUTH_DB}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U authsvc -d authsvc"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 3s
       timeout: 3s
       retries: 3
+      start_period: 3s
     networks: 
       - authnet
     volumes: 
@@ -53,12 +63,13 @@ services:
       - DOTENV_PRIVATE_KEY_DEVELOPMENT
     networks: 
       - frontnet
-    depends_on: 
+    depends_on:
+      authsvc-build:
+        condition: service_completed_successfully 
       db-userpost:
         condition: service_healthy
       
-
-  userposts:
+  userpost:
     build:
       context: ./post-svc
       target: prerelease
@@ -71,23 +82,35 @@ services:
       - frontnet
       - svcnet
     depends_on:
-      userpost-build: 
-        condition: service_completed_successfully
       authsvc:
         condition: service_started
+      userpost-build: 
+        condition: service_completed_successfully
       
+    develop:
+      watch:
+        - path: ./post-svc
+          action: sync+restart
+          target: /post-svc/
+          ignore: 
+            - ./post-svc/node_modules
+            - ./post-svc/package.json
+        - path: ./post-svc/package.json
+          action: rebuild
 
   db-userpost:
     image: postgres:alpine
     environment: 
-      - POSTGRES_PASSWORD={$POST_DB_PASS}
-      - POSTGRES_USER={$POST_DB_USER}
-      - POSTGRES_DB={$POST_DB}
+      - POSTGRES_PASSWORD=${POST_DB_PASS}
+      - POSTGRES_USER=${POST_DB_USER}
+      - POSTGRES_DB=${POST_DB}
     healthcheck: 
-      test: ["CMD-SHELL", "pg_isready -U userpost -d userpost"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 3s
       timeout: 3s
       retries: 3
+      start_period: 5s
+
     networks: 
       - frontnet
     volumes: 
