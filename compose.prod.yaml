@@ -26,18 +26,18 @@ services:
   db-authsvc:
     image: postgres:alpine
     environment: 
-      - POSTGRES_PASSWORD={$AUTH_DB_PASS}
-      - POSTGRES_USER={$AUTH_DB_USER}
-      - POSTGRES_DB={$AUTH_DB}
+      - POSTGRES_PASSWORD=${AUTH_DB_PASS}
+      - POSTGRES_USER=${AUTH_DB_USER}
+      - POSTGRES_DB=${AUTH_DB}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U authsvc -d authsvc"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 3s
       timeout: 3s
       retries: 3
     networks: 
       - authnet
     volumes: 
-      - data-authsvc:/var/lib/postgresql
+      - authsvc-data-prod:/var/lib/postgresql
 
   userpost-build:
     build:
@@ -50,6 +50,8 @@ services:
     networks: 
       - frontnet
     depends_on: 
+      authsvc:
+        condition: service_started
       db-userpost:
         condition: service_healthy
       
@@ -66,30 +68,28 @@ services:
     depends_on:
       userpost-build: 
         condition: service_completed_successfully
-      authsvc:
-        condition: service_started
       
 
   db-userpost:
     image: postgres:alpine
     environment: 
-      - POSTGRES_PASSWORD={$POST_DB_PASS}
-      - POSTGRES_USER={$POST_DB_USER}
-      - POSTGRES_DB={$POST_DB}
+      - POSTGRES_PASSWORD=${POST_DB_PASS}
+      - POSTGRES_USER=${POST_DB_USER}
+      - POSTGRES_DB=${POST_DB}
     healthcheck: 
-      test: ["CMD-SHELL", "pg_isready -U userpost -d userpost"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 3s
       timeout: 3s
       retries: 3
     networks: 
       - frontnet
     volumes: 
-      - data-userpost:/var/lib/postgresql
+      - userpost-data-prod:/var/lib/postgresql
 networks: 
   frontnet:
   authnet:
   svcnet:
 volumes:
-  data-userpost:
-  data-authsvc:
+  userpost-data-prod:
+  authsvc-data-prod:
     
