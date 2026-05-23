@@ -173,6 +173,7 @@ router.get('/profile/:username', async (req, res, next) => {
       likedPostList: likedPostList,
       likedPostLength: likedPostList.length,
       postLength: postlist.length,
+      catgName: user.username
     });
   } else {
     const user = await postsUsersStore.getPublicData(req.params.username);
@@ -184,7 +185,8 @@ router.get('/profile/:username', async (req, res, next) => {
       title: "About " + req.params.username,
       user: req.user,
       publicUser: user,
-      postlist: user.posts
+      postlist: user.posts,
+      catgName: user.username
     })
   }
 

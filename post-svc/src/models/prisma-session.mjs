@@ -51,6 +51,8 @@ export async function restoreSession(req, res, next) {
       secure: true, sameSite: "lax", httpOnly: true, path: "/",
       maxAge: 1000 * 60 * 15
     })
+    res.redirect(req.url)
+    return
   }
   next()
 }

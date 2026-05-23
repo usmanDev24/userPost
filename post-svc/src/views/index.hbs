@@ -1,13 +1,16 @@
-<div class="max-w-4xl w-full mx-auto p-4 md:p-6">
+<div id='main-app-wrapper' class="max-w-4xl w-full mx-auto p-2 md:p-6">
   {{#if homepage}}
   <section class="mt-8 mb-20">
     <div class="flex flex-col md:flex-row items-center gap-16 lg:gap-20">
 
       <div class="lg:w-1/2 flex flex-col items-center md:items-start text-center xs:text-center md:text-left lg:pr-6">
 
-        <h1 class="text-4xl text-center md:text-left md:text-6xl font-black leading-[1.1] mb-8 tracking-tighter text-base-content">
-          <span class="text-green-500/90">Share</span> <span class="text-transparent bg-clip-text bg-linear-to-r from-green-500  to-purple-600"> Ideas, Spark </span> <span class=" text-purple-500/90">Discussion</span> 
-          
+        <h1
+          class="text-4xl text-center md:text-left md:text-6xl font-black leading-[1.1] mb-8 tracking-tighter text-base-content">
+          <span class="text-green-500/90">Share</span> <span
+            class="text-transparent bg-clip-text bg-linear-to-r from-green-500  to-purple-600"> Ideas, Spark </span>
+          <span class=" text-purple-500/90">Discussion</span>
+
         </h1>
 
         <p class="text-lg opacity-80 leading-relaxed mb-10 max-w-md font-medium">
@@ -361,7 +364,7 @@
     <div id="{{key}}"
       class="card bg-base-200/60 dark:bg-base-200/50 border border-base-200 shadow-sm hover:border-base-300 transition-colors mb-2">
 
-      <div class="card-body  p-4 sm:p-7">
+      <div class="card-body  p-2 sm:p-7">
 
         <div class="flex items-start justify-between mb-3">
           <div class="flex items-center gap-3">
@@ -393,7 +396,7 @@
 
           <div id="{{key}}-info-container" class="flex flex-col items-end">
             <span id="{{key}}-info"
-              class="badge badge-success badge-outline border-2 text-[10px] font-black uppercase px-2 py-3 hidden rounded-lg"></span>
+              class="badge badge-info opacity-90 badge-outline text-[10px] font-black uppercase px-2 py-3 hidden rounded-lg"></span>
           </div>
         </div>
 
@@ -418,21 +421,23 @@
 
         {{#if coverPic}}
         <a href="/posts/view?key={{key}}"
-          class="block mb-4 aspect-16/8 overflow-hidden rounded-2xl border border-base-200 bg-base-200/30">
-          <img src="{{coverPic}}" alt="{{title}}" class="w-full h-full object-cover rounded-2xl" />
+          class="block mb-4 aspect-16/9 overflow-hidden rounded-xl border border-base-200 bg-base-200/30">
+          <img src="{{coverPic}}" alt="{{title}}" class="w-full h-full object-cover rounded-xl" />
         </a>
         {{/if}}
 
-        <div class="flex items-center justify-between mt-2">
-          <div class="flex items-center gap-1">
-            <button data-postkey="{{key}}" class="like-btn btn btn-ghost btn-sm rounded-xl gap-2 text-success ">
+        <div class="flex items-center justify-between  pl-0 -ml-2 sm:ml-0">
+          <div class="flex items-center justify-between gap-1">
+            <button id="{{key}}-likebtn" data-postkey="{{key}}" class="like-btn btn btn-ghost btn-sm {{#unless @root.user}} btn-disabled {{/unless}} rounded-xl gap-2 text-primary ">
               <span id="{{key}}-likeLogo" data-feather="thumbs-up" class="h-4 w-4"></span>
               <span id="{{key}}-likes" class="font-black text-xs">{{_count.likes}}</span>
+              <span id="{{key}}-newlikes" class=" relative hidden -top-4 -left-3 sm:-left-1 bg-primary/90 text-primary-content/90 text-[10px] rounded-full px-1 py-0">0</span>
             </button>
 
-            <div class="btn btn-ghost btn-sm rounded-xl gap-2 text-info pointer-events-none opacity-80">
+            <div class="btn btn-ghost btn-sm rounded-xl gap-2 text-info pointer-events-none">
               <span data-feather="message-circle" class="h-4 w-4"></span>
               <span id="{{key}}-comments" class="font-black text-xs">{{_count.comments}}</span>
+              <span id="{{key}}-newcomments" class=" relative hidden -top-4 -left-3 sm:-left-1 bg-info/90 text-info-content/90 text-[10px] rounded-full px-1 py-0">0</span>
             </div>
           </div>
 
@@ -450,29 +455,32 @@
 </div>
 
 {{else}}
-<div class="max-w-2xl mx-auto py-10 px-6 text-center">
-  <div class="w-20 h-20 bg-base-200 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-base-300">
-    <span data-feather="edit-3" class="h-10 w-10 opacity-20"></span>
+<div id="postlist" class="flex flex-col gap-6"></div>
+<div id="emptydiv">
+  <div class="max-w-2xl mx-auto py-10 px-6 text-center">
+    <div class="w-20 h-20 bg-base-200 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-base-300">
+      <span data-feather="edit-3" class="h-10 w-10 opacity-20"></span>
+    </div>
+    {{#if feedPage}}
+    <h2 class="text-3xl font-black mb-4 tracking-tight">Your feed is quiet</h2>
+    <p class="opacity-80 mb-10 max-w-sm mx-auto leading-relaxed">Follow more categories or users to see fresh content
+      curated for you.</p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <button class="btn btn-success rounded-full px-8 shadow-lg shadow-success/20"
+        onclick="feed_modal.showModal()">Update Preferences</button>
+      <a class="btn btn-ghost border border-base-300 rounded-full px-8" href="/explore/All%20Posts">Browse Global</a>
+    </div>
+    <script>document.getElementById("feed_modal").showModal()</script>
+    {{else}}
+    <h2 class="text-3xl font-black mb-4 tracking-tight">The Category is empty</h2>
+    <p class="opacity-80 mb-10 max-w-sm mx-auto leading-relaxed">Be the first USER to create POST in this Category.</p>
+    <a class="btn btn-success rounded-full px-10 shadow-lg shadow-success/20" href="/posts/add">
+      Create First Post
+    </a>
+    {{/if}}
   </div>
-
-  {{#if feedPage}}
-  <h2 class="text-3xl font-black mb-4 tracking-tight">Your feed is quiet</h2>
-  <p class="opacity-80 mb-10 max-w-sm mx-auto leading-relaxed">Follow more categories or users to see fresh content
-    curated for you.</p>
-  <div class="flex flex-col sm:flex-row gap-4 justify-center">
-    <button class="btn btn-success rounded-full px-8 shadow-lg shadow-success/20"
-      onclick="feed_modal.showModal()">Update Preferences</button>
-    <a class="btn btn-ghost border border-base-300 rounded-full px-8" href="/explore/All%20Posts">Browse Global</a>
-  </div>
-  <script>document.getElementById("feed_modal").showModal()</script>
-  {{else}}
-  <h2 class="text-3xl font-black mb-4 tracking-tight">The base is empty</h2>
-  <p class="opacity-80 mb-10 max-w-sm mx-auto leading-relaxed">Be the first one to share ideas with the world.</p>
-  <a class="btn btn-success rounded-full px-10 shadow-lg shadow-success/20" href="/posts/add">
-    Create First Post
-  </a>
-  {{/if}}
 </div>
+
 {{/if}}
 {{#if homepage}}
 <div class="mt-14 mb-16 flex justify-center">
@@ -483,24 +491,26 @@
   </a>
 </div>
 {{else}}
-<div id="pagination" class="flex flex-col items-center gap-4 mt-12 mb-8">
+<div id="pagination" class="flex  flex-col items-center gap-4 mt-12 mb-8">
 
 </div>
 {{/if}}
 </div>
-
+<script src="/socket.io/socket.io.js"></script>
 <script>
   const postlist = document.getElementById('postlist');
   const emptyDiv = document.getElementById('emptydiv'); // Reference to hide this if a post comes in
-  const ws = new WebSocket("{{wsURL}}")
+  const IONAMESPACE = "{{ioNameSpace}}"
+  const CATGNAME = "{{catgName}}"
+  const USERID = "{{user.id}}"
+  const USERNAME = "{{user.username}}"
 </script>
-<script src="/assets/javascripts/index-ws.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/assets/javascripts/socket-client.js"></script>
+<script src="/assets/javascripts/like-control.js"></script>
+
 <script src="/assets/javascripts/relative-time.js"></script>
 
-{{#if user }}
-
-<script src="/assets/javascripts/like-control.js"></script>
-{{/if }}
 {{#unless homepage}}
 <script>
 

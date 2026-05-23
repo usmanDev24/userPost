@@ -2,60 +2,29 @@ import { default as express } from "express";
 import PrismaPostsStore from "../models/posts-prisma.mjs"
 import { default as DBG } from "debug";
 import { ensureAuthenticated } from "./users.mjs";
-import { WsServer } from "../app.mjs"
+
 import { PrismaCommentsStore } from "../models/comments-prisma.mjs";
 import { PrimsaLikesStore } from "../models/likes-prisma.mjs";
 import { PrismaPostCatgStore } from "../models/catg-prisma.mjs";
 import * as crpto from 'node:crypto';
 import sanitizeHtml from 'sanitize-html';
-import multer from "multer"
+import multer from "multer";
+import { io } from "../app.mjs";
 
 const debug = DBG('posts:routs_posts.mjs')
 const dbgerror = DBG('posts:error')
 export const commentStore = new PrismaCommentsStore()
 export const likeStore = new PrimsaLikesStore()
 export const catgsStore = new PrismaPostCatgStore();
-const posts = new PrismaPostsStore()
+const posts = new PrismaPostsStore();
+
 import { picStore } from "./users.mjs";
 export const router = express.Router();
 
-export function wsPostsListeners() {
-  commentStore.events.on("commentcreated", (postkey, comment) => {
-    WsServer.clients.forEach(socket => {
-      if (socket.readyState === socket.OPEN) {
-        socket.send(JSON.stringify({ type: "commentcreated", postkey, comment }))
-      }
-    })
-  })
-  commentStore.events.on("commentdestroyed", (postkey, id) => {
-    WsServer.clients.forEach(socket => {
-      if (socket.readyState === socket.OPEN) {
-        socket.send(JSON.stringify({ type: "commentdestroyed", postkey, id }))
-      }
-    })
-  })
-  PrismaPostsStore.Events.on("postupdated", post => {
-    WsServer.clients.forEach(socket => {
-      if (socket.readyState === socket.OPEN) {
-        socket.send(JSON.stringify({ type: "postupdated", post }))
-      }
-    })
-  })
+export function initSocket() {
+  
+  
 }
-export async function initSocket(socket) {
-  socket.on("message", async (rawData) => {
-    let req = JSON.parse(rawData.toString())
-    if (req.type === "createcomment" && socket.user) {
-      try {
-        const comment = await commentStore.create(req.body.postkey, req.body.autherId, req.body.commentBody);
-
-      } catch (error) {
-        console.error(error)
-      }
-    }
-  })
-}
-
 //Add posts.
 router.get('/add', ensureAuthenticated, async (req, res, next) => {
   const catgNameList = (await catgsStore.getCategoriesNames()).map(v => {
@@ -143,7 +112,10 @@ router.post('/save', ensureAuthenticated, upload.single("imageFile"), async (req
 router.get('/view', async (req, res, next) => {
   try {
     let post = await posts.read(req.query.key);
-    if (!post) res.redirect("/")
+    if (!post) {
+      res.redirect("/")
+      return
+    }
     let owner = false
     if (req.user)
       if (req.user.id === post.autherId) {
@@ -154,7 +126,7 @@ router.get('/view', async (req, res, next) => {
       postkey: req.query.key, post: post,
       user: req.user ? req.user : undefined,
       owner,
-      wsURL: process.env.WS_URL
+      ioNameSpace :"/index"
     })
   } catch (err) { next(err) }
 })
@@ -234,25 +206,6 @@ router.get("/categories-names-list", ensureAuthenticated, async (req, res, next)
   const catgsList = await catgsStore.getCategoriesNames()
   res.type("application/json");
   res.send(catgsList)
-})
-router.post('/likes/add', ensureAuthenticated, async (req, res, next) => {
-  const postkey = req.body?.postkey;
-  const userId = req.body?.userId
-  if (postkey, userId) {
-    const like = await likeStore.create(postkey, userId)
-    res.status(200)
-    res.end("Ok")
-  }
-})
-
-router.post('/likes/destroy', ensureAuthenticated, async (req, res, next) => {
-  const postkey = req.body?.postkey;
-  const userId = req.body?.userId
-  if (postkey, userId) {
-    const like = await likeStore.destroy(postkey, userId)
-    res.status(200)
-    res.end("Ok")
-  }
 })
 
 

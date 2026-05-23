@@ -1,8 +1,19 @@
+let SOCKET;
+try {
+  if (socket) SOCKET = socket
+} catch (error) {
+  SOCKET = io(IONAMESPACE, {
+    transports: ["websocket"]
+  })
+  console.error(error)
+}
+
 class LikesControl {
   constructor() {
     this.likeButtons = document.querySelectorAll(".like-btn")
   }
   async init() {
+    if (USERID)
     await this.setLikes()
     this.attachEvents()
   }
@@ -21,6 +32,37 @@ class LikesControl {
 
   }
   attachEvents() {
+    SOCKET.on("likecreated", (postkey, userid) => {
+      if (USERID == userid) {
+        const btn = document.getElementById(`${postkey}-likebtn`)
+        this.toLiked(btn, postkey)
+      } else {
+        const likeSpan = document.getElementById(postkey + "-newlikes")
+        const change = Number(likeSpan.textContent) + 1;
+        likeSpan.classList.remove("hidden");
+        likeSpan.textContent = (change < 0) ? change : "+" + change;
+        if (change == 0) {
+          likeSpan.classList.add("hidden");
+        }
+        updatePageUI()
+      }
+    })
+    SOCKET.on("likedestroyed", (postkey, userid) => {
+      if (USERID == userid) {
+        const btn = document.getElementById(`${postkey}-likebtn`)
+        this.toUnLiked(btn, postkey)
+      } else {
+        const likeSpan = document.getElementById(postkey + "-newlikes")
+        const change = Number(likeSpan.textContent) - 1;
+        likeSpan.textContent = (change < 0) ? change : "+" + change;
+        likeSpan.classList.remove("hidden");
+        if (change == 0) {
+          likeSpan.classList.add("hidden");
+        }
+        updatePageUI()
+      }
+    })
+    if (!USERID) return
     Array.from(this.likeButtons).forEach((btn, i) => {
       btn.addEventListener("click", async (event) => {
 
@@ -30,12 +72,12 @@ class LikesControl {
           btn.disabled = true;
           btn.classList.replace("btn-ghost", "btn-active")
           try {
-            const res = await this.fetchApi("/posts/likes/destroy", "POST", JSON.stringify({
+            const res = await this.fetchApi("destroylike", "ondestroylike", {
               postkey: postkey,
               userId: userId
-            }))
+            })
             if (res === "Ok") {
-              this.toUnLiked(btn, postkey)
+
             }
           } catch (err) {
             console.error(err)
@@ -50,12 +92,12 @@ class LikesControl {
           btn.classList.replace("btn-ghost", "btn-active")
           btn.disabled = true;
           try {
-            const res = await this.fetchApi("/posts/likes/add", "POST", JSON.stringify({
+            const res = await this.fetchApi("createlike", "oncreatelike", {
               postkey: postkey,
               userId: userId
-            }))
+            })
             if (res === "Ok") {
-              this.toLiked(btn, postkey)
+
             }
           } catch (err) {
             console.error(err)
@@ -68,13 +110,14 @@ class LikesControl {
       })
     })
   }
-  async fetchApi(url, method, body) {
-    const res = await fetch(url, {
-      body,
-      method,
-      headers: { "content-type": "application/json" }
+  async fetchApi(toEmit, waiton, data) {
+    SOCKET.emit(toEmit, data)
+    const res = await new Promise((resolve, reject) => {
+      SOCKET.on(waiton, (message) => {
+        resolve(message)
+      })
     })
-    return await res.text()
+    return res
   }
   toLiked(btn, postkey) {
     btn.setAttribute("data-isliked", "true")
@@ -85,7 +128,7 @@ class LikesControl {
   }
   toUnLiked(btn, postkey) {
     btn.setAttribute("data-isliked", "false")
-    btn.className = "like-btn btn btn-ghost btn-sm gap-2 text-success";
+    btn.className = "like-btn btn btn-ghost btn-sm gap-2 text-primary";
     document.getElementById(postkey + "-likes").textContent -= 1;
     document.getElementById(postkey + "-likeLogo").setAttribute("class", "h-4 w-4")
 

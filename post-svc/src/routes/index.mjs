@@ -1,25 +1,84 @@
 import * as express from "express";
-import { WsServer } from "../app.mjs";
+
 import { catgsStore } from "./posts.mjs";
 import PrismaPostsStore from "../models/posts-prisma.mjs";
 import { postsUsersStore } from "./users.mjs";
+import { io } from "../app.mjs";
 
+import { commentStore } from "./posts.mjs";
 export const router = express.Router();
 export const postsStore = new PrismaPostsStore();
+import { PrimsaLikesStore } from "../models/likes-prisma.mjs";
+import { likeStore } from "./posts.mjs";
 
-export function wsHomeListners() {
+export function initSocket() {
+  io.of("/index").on("connection", async socket => {
+    socket.emit("connected", "Socket connected")
+    socket.on("join-room", async rooms => {
+      await socket.join(rooms)
+      socket.emit("room-joined", Array.from(socket.rooms.values()))
+    })
+    socket.on("createcomment", async data => {
+      if (socket.request.user) {
+        try {
+          const comment = await commentStore.create(data.postkey, socket.request.user.id, data.body)
+        } catch (error) {
+          console.error(error)
+        }
+      }
+    })
+    socket.on("createlike", async data => {
+      if (socket.request.user) {
+        try {
+          const like = await likeStore.create(data.postkey, socket.request.user.id) 
+          if (like)  socket.emit("oncreatelike", "Ok")
+        } catch (error) {
+          console.error(error)
+        }
+      }
+    })
+    socket.on("destroylike", async data => {
+      if (socket.request.user) {
+        try {
+          const like = await likeStore.destroy(data.postkey, socket.request.user.id)
+          socket.emit("ondestroylike", "Ok")  
+        } catch (error) {
+          console.error(error)
+        }
+      }
+    })
+  })
+
   PrismaPostsStore.Events.on("postcreated", (post) => {
-    WsServer.clients.forEach((socket) => {
-      if (socket.readyState === socket.OPEN)
-        socket.send(JSON.stringify({ type: "postcreated", post: post }));
+
+    const postCatgs = post.catgs.map(catg => {
+      return catg.catgName
     });
-  });
-  PrismaPostsStore.Events.on("postdestroyed", (key) => {
-    WsServer.clients.forEach((socket) => {
-      if (socket.readyState === socket.OPEN)
-        socket.send(JSON.stringify({ type: "postdestroyed", key: key }));
+    postCatgs.forEach(catg => {
+      io.of("/index").to(catg).emit("postcreated", post)
     });
-  });
+    io.of("/index").to("All Posts").emit("postcreated", post)
+    io.of("/index").to("landing").emit("postcreated", post)
+  })
+  PrismaPostsStore.Events.on("postdestroyed", key => {
+    io.of("/index").to(key).emit("postdestroyed", key)
+  })
+  PrismaPostsStore.Events.on("postupdated", post => {
+    io.of("/index").to(post.key).emit("postupdated", post)
+  })
+  commentStore.events.on("commentcreated", (postkey, comment) => {
+    io.of("/index").to(postkey).emit("commentcreated", postkey, comment)
+  })
+  commentStore.events.on("commentdestroyed", (postkey, commentId) => {
+    io.of("/index").to(postkey).emit("commentdestroyed", postkey, commentId)
+  })
+
+  PrimsaLikesStore.events.on("likecreated", (postkey, userid) => {
+    io.of("/index").to(postkey).emit("likecreated", postkey, userid)
+  })
+  PrimsaLikesStore.events.on("likedestroyed", (postkey, userid) => {
+    io.of("/index").to(postkey).emit("likedestroyed", postkey, userid)
+  })
 }
 router.get("/explore/:catgName", async (req, res, next) => {
   /**@type {[]} */
@@ -44,7 +103,7 @@ router.get("/explore/:catgName", async (req, res, next) => {
   const postlist = await Promise.all(
     pageKeys.map((key) => postsStore.read(key)),
   );
-  
+
   let baseUrl = req.url.substring(0, req.url.lastIndexOf("?"));
 
   res.render("index", {
@@ -59,10 +118,11 @@ router.get("/explore/:catgName", async (req, res, next) => {
     latest: sort == "latest" ? true : false,
     current: pageNo,
     baseUrl: baseUrl,
-    totalPages:  Math.ceil(keylist.length / limit) || 1,
+    totalPages: Math.ceil(keylist.length / limit) || 1,
     catgNameList: catgNameList,
     user: req.user ? req.user : undefined,
     level: req.query.level,
+    ioNameSpace: "/index"
   });
 });
 /* GET home page. */
@@ -120,14 +180,16 @@ router.get("/your-feed", async (req, res, next) => {
     total: keylist.length,
     limit: limit,
     limitList,
+    catgName: feedCatgsList,
     sort: sort,
     latest: sort == "latest" ? true : false,
     current: pageNo,
     baseUrl: baseUrl,
-    totalPages:  Math.ceil(keylist.length / limit) || 1,
+    totalPages: Math.ceil(keylist.length / limit) || 1,
     catgNameList,
     user: req.user ? req.user : undefined,
     level: req.query.level,
+    ioNameSpace: "/index"
   });
 });
 router.get("/", async (req, res, next) => {
@@ -150,6 +212,8 @@ router.get("/", async (req, res, next) => {
       level: req.query.level,
       massage: req.query.massage,
       updates: true,
+      ioNameSpace: "/index",
+      catgName: "landing",
     });
   } catch (err) {
     next(err);

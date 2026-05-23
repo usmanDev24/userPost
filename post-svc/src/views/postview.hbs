@@ -1,319 +1,228 @@
-<div class="max-w-4xl w-full mx-auto p-4 md:p-12 pb-24">
-  {{#if post}}
-  <article class="bg-base-100 max-w-4xl mx-auto">
-    <header
-      class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6 mb-8 pb-2 sm:pb-6 border-b border-base-200/60">
-      <div class="flex items-center gap-4">
-        <div class="avatar">
-          <div class="w-14 h-14 rounded-2xl bg-base-200 shadow-sm overflow-hidden">
-            <img src="{{post.auther.photoURL}}" alt="{{post.auther.username}}" />
+<div id="main-app-wrapper">
+  <div id="pagediv" class="max-w-4xl w-full mx-auto p-4 md:p-12 pb-24">
+    {{#if post}}
+    <article class="bg-base-100 max-w-4xl mx-auto">
+      <header
+        class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6 mb-8 pb-2 sm:pb-6 border-b border-base-200/60">
+        <div class="flex items-center gap-4">
+          <div class="avatar">
+            <div class="w-14 h-14 rounded-2xl bg-base-200 shadow-sm overflow-hidden">
+              <img src="{{post.auther.photoURL}}" alt="{{post.auther.username}}" />
+            </div>
+          </div>
+          <div>
+            <a href="/users/profile/{{post.auther.username}}"
+              class="text-xl font-black tracking-tighter hover:text-primary transition-colors">
+              {{post.auther.username}}
+            </a>
+            <div class="flex items-center gap-3 mt-1 flex-wrap">
+              <p class="text-[10px] font-bold opacity-50 uppercase tracking-widest">
+                created : <span id="createSpan" class="updatedAt " data-time="{{post.createdAt}}"></span>
+              </p>
+              <div class="hidden sm:flex gap-2  flex-wrap">
+                {{#each post.catgs}}
+                <a href="/explore/{{catgName}}"
+                  class="text-[11px] uppercase tracking-widest font-black text-primary/90 hover:text-primary">#{{catgName}}</a>
+                {{/each}}
+              </div>
+            </div>
           </div>
         </div>
-        <div>
-          <a href="/users/profile/{{post.auther.username}}"
-            class="text-xl font-black tracking-tighter hover:text-primary transition-colors">
-            {{post.auther.username}}
+        <div class="flex sm:hidden gap-2  flex-wrap">
+          {{#each post.catgs}}
+          <a href="/explore/{{catgName}}"
+            class="text-[10px] uppercase tracking-widest font-black text-primary/90 hover:text-primary">#{{catgName}}</a>
+          {{/each}}
+        </div>
+        {{#if postkey}}
+        <div class="flex gap-2 w-auto">
+          <a {{#if owner}}{{else}} hidden{{/if}} href="/posts/edit?key={{postkey}}"
+            class="flex-1 md:flex-none btn btn-sm btn-ghost border border-base-300 rounded-xl gap-2 font-black uppercase text-[10px] tracking-widest">
+            <span data-feather="edit-3" class="w-3.5 h-3.5"></span> Edit
           </a>
-          <div class="flex items-center gap-3 mt-1 flex-wrap">
-            <p class="text-[10px] font-bold opacity-50 uppercase tracking-widest">
-              created : <span id="createSpan" class="updatedAt " data-time="{{post.createdAt}}"></span>
-            </p>
-            <div class="hidden sm:flex gap-2  flex-wrap">
-              {{#each post.catgs}}
-              <a href="/explore/{{catgName}}"
-                class="text-[11px] uppercase tracking-widest font-black text-primary/90 hover:text-primary">#{{catgName}}</a>
-              {{/each}}
-            </div>
-          </div>
+          <button {{#if owner}}{{else}} hidden{{/if}}
+            class="flex-1 md:flex-none btn btn-sm btn-ghost text-error border border-base-300 rounded-xl gap-2 font-black uppercase text-[10px] tracking-widest"
+            onclick="confirm_delete_modal.showModal()">
+            <span data-feather="trash-2" class="w-3.5 h-3.5"></span> Delete
+          </button>
         </div>
-      </div>
-      <div class="flex sm:hidden gap-2  flex-wrap">
-        {{#each post.catgs}}
-        <a href="/explore/{{catgName}}"
-          class="text-[10px] uppercase tracking-widest font-black text-primary/90 hover:text-primary">#{{catgName}}</a>
-        {{/each}}
-      </div>
-      {{#if postkey}}
-      <div class="flex gap-2 w-auto">
-        <a {{#if owner}}{{else}} hidden{{/if}} href="/posts/edit?key={{postkey}}"
-          class="flex-1 md:flex-none btn btn-sm btn-ghost border border-base-300 rounded-xl gap-2 font-black uppercase text-[10px] tracking-widest">
-          <span data-feather="edit-3" class="w-3.5 h-3.5"></span> Edit
-        </a>
-        <button {{#if owner}}{{else}} hidden{{/if}}
-          class="flex-1 md:flex-none btn btn-sm btn-ghost text-error border border-base-300 rounded-xl gap-2 font-black uppercase text-[10px] tracking-widest"
-          onclick="confirm_delete_modal.showModal()">
-          <span data-feather="trash-2" class="w-3.5 h-3.5"></span> Delete
-        </button>
-      </div>
+        {{/if}}
+
+      </header>
+      <p id="updateDiv" class="text-[10px] -mt-4 mb-4 font-bold opacity-50 uppercase tracking-widest">
+        Last Update : <span id="updateSpan" class="updatedAt " data-time="{{post.updatedAt}}"></span>
+      </p>
+      {{#if post.coverPic}}
+      <figure class="mb-10 rounded-2xl overflow-hidden border border-base-200 bg-base-200/30 shadow-inner">
+        <img src="{{post.coverPic}}" alt="{{post.title}}" class="w-full max-h-120 object-cover" />
+      </figure>
       {{/if}}
 
-    </header>
-    <p id="updateDiv" class="text-[10px] -mt-4 mb-4 font-bold opacity-50 uppercase tracking-widest">
-      Last Update : <span id="updateSpan" class="updatedAt " data-time="{{post.updatedAt}}"></span>
-    </p>
-    {{#if post.coverPic}}
-    <figure class="mb-10 rounded-2xl overflow-hidden border border-base-200 bg-base-200/30 shadow-inner">
-      <img src="{{post.coverPic}}" alt="{{post.title}}" class="w-full max-h-120 object-cover" />
-    </figure>
-    {{/if}}
+      <section class="max-w-none mb-12">
+        <h1 id="postTitle"
+          class="text-4xl md:text-5xl font-black tracking-tighter mb-8 leading-[1.05] text-base-content">
+          {{post.title}}
+        </h1>
 
-    <section class="max-w-none mb-12">
-      <h1 id="postTitle" class="text-4xl md:text-5xl font-black tracking-tighter mb-8 leading-[1.05] text-base-content">
-        {{post.title}}
-      </h1>
-
-      <div id="postBody" class="prose prose-neutral  max-w-none text-base-content leading-relaxed 
+        <div id="postBody"
+          class="prose prose-neutral  max-w-none text-base-content leading-relaxed 
       prose-headings:font-black prose-pre:bg-neutral/30 dark:prose-pre:text-secondary-content prose-pre:text-green-800 prose-h1:text-3xl prose-headings:tracking-tighte">
-        {{{post.body}}}
-      </div>
-    </section>
+          {{{post.body}}}
+        </div>
+      </section>
 
-    <footer class="flex items-center justify-between gap-2 py-4 border-t border-b border-base-200 flex-wrap mb-12">
-      <div class="flex gap-4">
-        <button data-postkey="{{post.key}}" class="like-btn btn btn-ghost btn-sm rounded-xl gap-2 text-success group">
-          <span id="{{post.key}}-likes" class="font-black">{{post._count.likes}}</span>
-          <span id="{{post.key}}-likeLogo" data-feather="thumbs-up"
-            class="w-4 h-4 group-hover:scale-110 transition-transform"></span>
+      <div class="flex items-center justify-between gap-2 py-4 border-t border-b border-base-200 flex-wrap mb-12">
+        <div class="flex gap-4">
+          <button id="{{post.key}}-likebtn" data-postkey="{{post.key}}" class="like-btn btn btn-ghost btn-sm {{#unless @root.user}} btn-disabled {{/unless}} rounded-xl gap-2 text-primary ">
+            <span id="{{post.key}}-likeLogo" data-feather="thumbs-up" class="h-4 w-4"></span>
+            <span id="{{post.key}}-likes" class="font-black text-xs">{{post._count.likes}}</span>
+            <span id="{{post.key}}-newlikes"
+              class=" relative hidden -top-4 -left-1 bg-primary/90 text-primary-content/90 text-[10px] rounded-full px-1.5 py-0.5">0</span>
+          </button>
+
+          <div class="btn btn-ghost btn-sm rounded-xl gap-2 text-info pointer-events-none">
+            <span data-feather="message-circle" class="h-4 w-4"></span>
+            <span id="{{post.key}}-comments" class="font-black text-xs">{{post._count.comments}}</span>
+            <span id="{{post.key}}-newcomments"
+              class=" relative hidden -top-4 -left-1 bg-info/90 text-info-content/90 text-[10px] rounded-full px-1.5 py-0.5">0</span>
+          </div>
+        </div>
+
+        <button {{#if user}} {{else}} disabled {{/if}}
+          class="btn btn-sm md:btn-md btn-primary opacity-95 btn-outline rounded-2xl px-4 font-black gap-2 shadow-sm"
+          onclick="comment_modal.showModal()">
+          <span data-feather="plus" class="w-4 h-4"></span>
+          Add Comment
         </button>
-        <div class="btn btn-ghost btn-sm rounded-xl gap-2 text-info cursor-default hover:bg-transparent">
-          <span id="commentsLength" class="font-black">{{post._count.comments}}</span>
-          <span data-feather="message-circle" class="w-4 h-4"></span>
-        </div>
+      </div>
+    </article>
+    <div class="space-y-6">
+      <div class="flex items-center gap-4">
+        <h3 class="text-xs font-black uppercase tracking-[0.3em] opacity-60">Latest Comments</h3>
       </div>
 
-      <button {{#if user}} {{else}} disabled {{/if}}
-        class="btn btn-sm md:btn-md btn-primary btn-outline rounded-2xl px-4 font-black gap-2 shadow-lg shadow-primary/20"
-        onclick="comment_modal.showModal()">
-        <span data-feather="plus" class="w-4 h-4"></span>
-        Add Thought
-      </button>
-    </footer>
-  </article>
-  <div class="space-y-6">
-    <div class="flex items-center gap-4">
-      <h3 class="text-xs font-black uppercase tracking-[0.3em] opacity-60">Community Discussion</h3>
-      <div class="h-px flex-1 bg-base-200"></div>
-    </div>
+      <div id="liveComments" class="flex flex-col-reverse gap-6"></div>
 
-    <div id="liveComments" class="flex flex-col-reverse gap-6"></div>
-
-    <div id="staticComments" class="flex flex-col gap-6">
-      {{#if post.comments}}
-      {{#each post.comments}}
-      <div id="comment_{{id}}"
-        class="group p-4 rounded-4xl bg-base-200/40 border border-transparent hover:border-base-300 transition-all">
-        <div class="flex justify-between items-start mb-4">
-          <div class="flex items-center gap-3">
-            <img class="rounded-xl bg-neutral w-8 h-8 shadow-sm" src="{{auther.photoURL}}">
-            <div>
-              <p class="font-black text-sm tracking-tight leading-none">{{auther.username}}</p>
-              <span data-time="{{createdAt}}"
-                class="updatedAt text-[10px] md:text-xs  font-bold opacity-60 uppercase tracking-wide mt-1 inline-block"></span>
+      <div id="staticComments" class="flex flex-col gap-6">
+        {{#if post.comments}}
+        {{#each post.comments}}
+        <div id="comment_{{id}}"
+          class="group p-4 rounded-4xl bg-base-200/40 border border-transparent hover:border-base-300 transition-all">
+          <div class="flex justify-between items-start mb-4">
+            <div class="flex items-center gap-3">
+              <img class="rounded-xl bg-neutral w-8 h-8 shadow-sm" src="{{auther.photoURL}}">
+              <div>
+                <p class="font-black text-sm tracking-tight leading-none">{{auther.username}}</p>
+                <span data-time="{{createdAt}}"
+                  class="updatedAt text-[10px] md:text-xs  font-bold opacity-60 uppercase tracking-wide mt-1 inline-block"></span>
+              </div>
             </div>
-          </div>
-          <div class="dropdown dropdown-end  transition-opacity">
-            <div tabindex="0" role="button" class="btn btn-circle btn-ghost  btn-xs rounded-full">
-              <span data-feather="more-vertical" class="h-5"></span>
+            {{#if (eq auther.username @root.user.username)}}
+            <div class="dropdown dropdown-end  transition-opacity">
+              <div tabindex="0" role="button"
+                class="btn btn-circle btn-ghost btn-xs sm:btn-sm py-0.5 px-1  rounded-full">
+                <span data-feather="more-vertical" class="h-5"></span>
+              </div>
+              <ul tabindex="0"
+                class="dropdown-content z-1 menu p-2 shadow-xl bg-base-100 border border-base-200 rounded-xl w-32">
+                <li>
+                  <button onclick="fetch('/posts/comment/destroy/{{id}}')"
+                    class="deletebtn text-error flex items-center gap-2 font-bold text-[11px] uppercase tracking-widest">
+                    <span data-feather="trash-2" class="w-4 h-4 mb-0.5"></span>
+                    Delete
+                  </button>
+                </li>
+              </ul>
             </div>
-            <ul tabindex="0"
-              class="dropdown-content z-1 menu p-2 shadow-xl bg-base-100 border border-base-200 rounded-xl w-32">
-              <li>
-                <button onclick="fetch('/posts/comment/destroy/{{id}}')"
-                  class="text-error flex items-center gap-2 font-bold text-[11px] uppercase tracking-widest">
-                  <span data-feather="trash-2" class="w-4 h-4 mb-0.5"></span>
-                  Delete
-                </button>
-              </li>
-            </ul>
+            {{/if}}
           </div>
+          <p class="text-base-content/90 font-medium leading-relaxed pl-11">{{body}}</p>
         </div>
-        <p class="text-base-content/90 font-medium leading-relaxed pl-11">{{body}}</p>
+        {{/each}}
+        {{else}}
+        <div id="noCommentsMsg"
+          class="p-12 text-center bg-base-200/30 rounded-[3rem] border-2 border-dashed border-base-300">
+          <p class="font-black opacity-50 uppercase tracking-[0.2em] text-sm">No comments shared yet</p>
+        </div>
+        {{/if}}
       </div>
-      {{/each}}
-      {{else}}
-      <div id="noCommentsMsg"
-        class="p-12 text-center bg-base-200/30 rounded-[3rem] border-2 border-dashed border-base-300">
-        <p class="font-black opacity-50 uppercase tracking-[0.2em] text-sm">No thoughts shared yet</p>
-      </div>
-      {{/if}}
     </div>
-  </div>
 
-  {{else}}
-  <div class="alert alert-error shadow-lg max-w-md mx-auto mt-10">
-    <span data-feather="alert-circle"></span>
-    <div>
-      <h3 class="font-bold">Error!</h3>
-      <div class="text-xs">Post not found or key is missing.</div>
+    {{else}}
+    <div class="alert alert-error shadow-lg max-w-md mx-auto mt-10">
+      <span data-feather="alert-circle"></span>
+      <div>
+        <h3 class="font-bold">Error!</h3>
+        <div class="text-xs">Post not found or key is missing.</div>
+      </div>
+      <a href="/" class="btn btn-sm">Go Home</a>
     </div>
-    <a href="/" class="btn btn-sm">Go Home</a>
+    {{/if}}
   </div>
-  {{/if}}
 </div>
-
-<dialog id="comment_modal" class="modal modal-bottom sm:modal-middle">
-  <div class="modal-box p-0 bg-base-100 border border-base-200">
-    <div class="bg-primary/5 p-6 border-b border-base-200">
-      <h2 class="text-xl font-black tracking-tight">Add Comment</h2>
-      <p class="text-[10px] font-bold opacity-50 uppercase tracking-widest">Replying to post</p>
-    </div>
-    <form id="commentForm">
-      <div class="p-6">
-        <textarea id="commentText" name="commentBody"
-          class="textarea textarea-bordered w-full h-32 rounded-2xl font-medium" placeholder="Share your perspective..."
-          required></textarea>
+  <dialog id="comment_modal" class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box p-0 bg-base-100 border border-base-200">
+      <div class="bg-primary/5 p-6 border-b border-base-200">
+        <h2 class="text-xl font-black tracking-tight">Add Comment</h2>
+        <p class="text-[10px] font-bold opacity-50 uppercase tracking-widest">Replying to post</p>
       </div>
-      <div class="modal-action bg-base-200/30 p-4 border-t border-base-200">
-        <button type="button" class="btn btn-ghost rounded-xl font-bold" onclick="comment_modal.close()">Cancel</button>
-        <button type="submit" class="btn btn-primary opacity-90 rounded-xl px-8 font-black shadow-lg"
-          onclick="comment_modal.close()">Post</button>
-      </div>
-    </form>
-  </div>
-  <form method="dialog" class="modal-backdrop"><button>close</button></form>
-</dialog>
-
-<dialog id="confirm_delete_modal" class="modal modal-middle">
-  <div class="modal-box text-center p-10">
-    <div class="w-16 h-16 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto mb-6">
-      <span data-feather="alert-triangle" class="w-8 h-8"></span>
-    </div>
-    <h2 class="text-2xl font-black mb-2">Delete Post?</h2>
-    <p class="opacity-60 mb-8 font-medium">This will permanently remove <span
-        class="text-base-content font-bold">"{{post.title}}"</span>.</p>
-    <div class="flex gap-3 justify-center">
-      <button class="btn btn-ghost px-8" onclick="confirm_delete_modal.close()">Keep it</button>
-      <button class="btn btn-error px-8 rounded-xl font-black"
-        onclick="delete_post_modal.showModal(); confirm_delete_modal.close()">Delete</button>
-    </div>
-  </div>
-  <form class="modal-backdrop" method="dialog"></form>
-</dialog>
-
-<dialog id="delete_post_modal" class="modal modal-middle">
-  <div class="modal-box border-2 border-error/20">
-    <h2 class="font-black text-xl mb-4">Are you absolutely sure?</h2>
-    <p class="text-sm opacity-70 mb-6">This action cannot be undone. All comments will be lost forever.</p>
-    <form method="post" action="/posts/destroy/confirm">
-      <input type="hidden" name="postkey" value="{{post.key}}">
-      <div class="flex justify-end gap-2">
-        <button type="button" class="btn btn-ghost" onclick="delete_post_modal.close()">Abort</button>
-        <button type="submit" class="btn btn-error font-black uppercase text-[10px]">Permanently Delete</button>
-      </div>
-    </form>
-  </div>
-  <form class="modal-backdrop" method="dialog"></form>
-</dialog>
-
-<script>
-  const commentForm = document.getElementById('commentForm');
-  const commentText = document.getElementById("commentText");
-  const liveComments = document.getElementById("liveComments");
-  const postBody = document.getElementById("postBody");
-
-  // Initialize WebSocket
-  const ws = new WebSocket("{{wsURL}}");
-
-  ws.addEventListener("message", event => {
-    const data = JSON.parse(event.data);
-    if (data.type === 'connection') {
-      console.log(data)
-    }
-    if (data.type === 'commentcreated' && data.postkey === "{{postkey}}") {
-      const comment = data.comment;
-
-      // Remove empty state message if it's there
-      const emptyMsg = document.getElementById("noCommentsMsg");
-      if (emptyMsg) emptyMsg.remove();
-
-      const commentdiv = document.createElement("div");
-      commentdiv.id = "comment_" + comment.id;
-      commentdiv.className = "group p-6 rounded-[2rem] bg-base-200/40 border border-transparent hover:border-base-300 transition-all w-full";
-
-      commentdiv.innerHTML = `
-        <div class="flex justify-between items-start mb-4">
-          <div class="flex items-center gap-3">
-            <img class="rounded-xl bg-neutral w-8 h-8 shadow-sm" src="${comment.auther.photoURL}">
-            <div>
-              <p class="font-black text-sm tracking-tight leading-none">${comment.auther.username}</p>
-              <span class="text-[9px] font-bold opacity-40 uppercase tracking-widest mt-1 inline-block">Just now</span>
-            </div>
-          </div>
-          <div class="dropdown dropdown-end  transition-opacity">
-            <div tabindex="0" role="button" class="btn btn-ghost btn-xs rounded-lg">
-              <span data-feather="more-vertical" class="w-5 h-5"></span>
-            </div>
-            <ul tabindex="0"
-              class="dropdown-content z-1 menu p-2 shadow-xl bg-base-100 border border-base-200 rounded-xl w-32">
-              <li>
-                <button onclick="fetch('/posts/comment/destroy/${comment.id}')"
-                  class="text-error flex items-center gap-2 font-bold text-[11px] uppercase tracking-widest">
-                  <span data-feather="trash-2" class="w-4 h-4 mb-0.5"></span>
-                  Delete
-                </button>
-              </li>
-            </ul>
-          </div>
+      <form id="commentForm">
+        <div class="p-6">
+          <textarea id="commentText" name="commentBody"
+            class="textarea textarea-bordered w-full h-32 rounded-2xl font-medium"
+            placeholder="Share your perspective..." required></textarea>
         </div>
-        <p class="text-base-content/80 font-medium leading-relaxed pl-11">${comment.body}</p>
-      `;
+        <div class="modal-action bg-base-200/30 p-4 border-t border-base-200">
+          <button type="button" class="btn btn-ghost rounded-xl font-bold"
+            onclick="comment_modal.close()">Cancel</button>
+          <button type="submit" class="btn btn-primary opacity-90 rounded-xl px-8 font-black shadow-lg"
+            onclick="comment_modal.close()">Post</button>
+        </div>
+      </form>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+  </dialog>
 
-      liveComments.appendChild(commentdiv);
+  <dialog id="confirm_delete_modal" class="modal modal-middle">
+    <div class="modal-box text-center p-10">
+      <div class="w-16 h-16 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto mb-6">
+        <span data-feather="alert-triangle" class="w-8 h-8"></span>
+      </div>
+      <h2 class="text-2xl font-black mb-2">Delete Post?</h2>
+      <p class="opacity-60 mb-8 font-medium">This will permanently remove <span
+          class="text-base-content font-bold">"{{post.title}}"</span>.</p>
+      <div class="flex gap-3 justify-center">
+        <button class="btn btn-ghost px-8" onclick="confirm_delete_modal.close()">Keep it</button>
+        <button class="btn btn-error px-8 rounded-xl font-black"
+          onclick="delete_post_modal.showModal(); confirm_delete_modal.close()">Delete</button>
+      </div>
+    </div>
+    <form class="modal-backdrop" method="dialog"></form>
+  </dialog>
 
-      // Update comment count UI
-      const countEl = document.getElementById("commentsLength");
-      countEl.textContent = Number(countEl.textContent) + 1;
+  <dialog id="delete_post_modal" class="modal modal-middle">
+    <div class="modal-box border-2 border-error/20">
+      <h2 class="font-black text-xl mb-4">Are you absolutely sure?</h2>
+      <p class="text-sm opacity-70 mb-6">This action cannot be undone. All comments will be lost forever.</p>
+      <form method="post" action="/posts/destroy/confirm">
+        <input type="hidden" name="postkey" value="{{post.key}}">
+        <div class="flex justify-end gap-2">
+          <button type="button" class="btn btn-ghost" onclick="delete_post_modal.close()">Abort</button>
+          <button type="submit" class="btn btn-error font-black uppercase text-[10px]">Permanently Delete</button>
+        </div>
+      </form>
+    </div>
+    <form class="modal-backdrop" method="dialog"></form>
+  </dialog>
+  {{> welcome }}
+  <script>
+    const POSTKEY = "{{postkey}}"
+    const USERID = "{{user.id}}"
+    const USERNAME = "{{user.username}}"
+    const IONAMESPACE = "{{ioNameSpace}}";
+  </script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/assets/javascripts/postview.js"></script>
 
-      // Re-run Feather icons for the new comment
-      if (typeof feather !== 'undefined') feather.replace();
-
-      commentText.value = ""; // Clear the input
-    }
-    else if (data.type === "postupdated" && data.post.key === "{{postkey}}") {
-      document.getElementById("postTitle").textContent = data.post.title;
-      postBody.innerHTML = data.post.body;
-    }
-    else if (data.type === "commentdestroyed" && data.postkey === "{{postkey}}") {
-      const targetComment = document.getElementById("comment_" + data.id);
-      if (targetComment) targetComment.remove();
-
-      const countEl = document.getElementById("commentsLength");
-      countEl.textContent = Math.max(0, Number(countEl.textContent) - 1);
-    }
-  });
-
-  commentForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    if (ws.readyState === ws.OPEN) {
-      ws.send(JSON.stringify({
-        type: "createcomment",
-        body: {
-          postkey: "{{postkey}}",
-          autherId: "{{user.id}}",
-          commentBody: commentText.value
-        }
-      }));
-    }
-  });
-  const Events = new EventTarget()
-  const updateDiv = document.getElementById("updateDiv");
-  const updateSpan = document.getElementById("updateSpan");
-  const createSpan = document.getElementById("createSpan");
-  Events.addEventListener("timeset", () => {
-    if (updateSpan.textContent == createSpan.textContent) {
-      updateDiv.classList.add("hidden")
-    }
-  })
- 
-  const bodyLinks = postBody.querySelectorAll("a");
-  bodyLinks.forEach(e => {
-    e.setAttribute("target", "_blank")
-    
-  })
-</script>
-{{> welcome }}
-<script src="/assets/javascripts/relative-time.js"></script>
-
-{{#if user}}
-<script src="/assets/javascripts/like-control.js"></script>
-{{/if}}
+  <script src="/assets/javascripts/relative-time.js"></script>
+  <script src="/assets/javascripts/like-control.js"></script>

@@ -15,7 +15,7 @@ function switchTab(event, tabId) {
   const activeContent = document.getElementById(tabId);
   activeContent.classList.add('block');
   const header = document.getElementsByTagName("header")[0]
-  console.log(header.clientHeight)
+
   window.scrollTo({
     top: header.clientHeight,
     behavior: 'smooth'

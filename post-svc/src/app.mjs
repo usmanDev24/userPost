@@ -9,18 +9,20 @@ import * as http from 'http';
 import { approotdir } from './approotdir.mjs';
 import { createStream } from 'rotating-file-stream';
 const __dirname = approotdir;
-import {
+import { 
     normalizePort, onError, onListening, handle404, basicErrorHandler
 } from './appsupport.mjs';
 
 import passport from 'passport';
-import { router as indexRouter, wsHomeListners } from './routes/index.mjs';
-import { router as postsRouter, initSocket as initPostsSocket, wsPostsListeners } from './routes/posts.mjs';
+import { router as indexRouter, initSocket as initIndex } from './routes/index.mjs';
+import { router as postsRouter , initSocket as initPostSocket } from './routes/posts.mjs';
 import { initPassport, router as usersRouter, assetRouter as userAssestRouter } from './routes/users.mjs'
 import { default as DBG } from "debug";
-import * as ws from 'ws';
-import { wsSession } from './models/ws-session.mjs';
+
 import { restoreSession } from './models/prisma-session.mjs';
+
+import { Server as IoServer } from 'socket.io';
+import { escape } from 'querystring';
 
 const debug = DBG('posts:debug');
 const dbgerror = DBG('posts:error')
@@ -32,6 +34,9 @@ export const app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 hbs.registerPartials(path.join(__dirname, 'partials'));
+hbs.registerHelper('eq', function (a, b) {
+    return String(a) === String(b);
+});
 
 // uncomment after placing your favicon in /public
 app.use(serveFavicon(path.join(__dirname, "public", "assets", "favicon", "favicon.ico")));
@@ -62,13 +67,13 @@ mainRouter.use(async (req, res, next) => {
             passport.authenticate('jwt', { session: false, })(req, res, next)
         }
         else {
-            restoreSession(req, res, next)
+            await restoreSession(req, res, next)
         }
     })(req, res, next)
 
 })
 mainRouter.use((req, res, next) => {
-    if (process.env.X_WORKER && req.headers.host != "localhost") {
+    if (process.env.X_WORKER && req.headers.host != "localhost:3000") {
         if (!req.headers['x-worker'] || req.headers['x-worker'] !== process.env.X_WORKER) {
             res.status(403)
             res.end("Forbidden");
@@ -90,26 +95,42 @@ export const port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
 export const server = http.createServer(app);
-export const WsServer = new ws.WebSocketServer({ server })
+export const io = new IoServer(server, {transports: ["websocket"]})
+initIndex()
+initPostSocket()
 server.listen(port);
-
-WsServer.on("connection", async (socket, req) => {
-    const rawCookies = req.headers.cookie;
-    if (rawCookies)
-        socket.user = await wsSession(rawCookies);
-    socket.send(JSON.stringify({ type: 'connection', message: 'connected ' + JSON.stringify(socket.user) }))
-    initPostsSocket(socket)
-})
-addWsListeners()
-
-function addWsListeners() {
-    wsHomeListners()
-    wsPostsListeners()
-}
-
 server.on('error', onError);
 server.on('listening', onListening);
 server.on('request', (req, res) => {
     //debug(`${new Date().toISOString()} request ${req.method} ${req.url}`)
 })
+
+
+
+
+
+io.engine.use((req, res, next) => {
+    const isHandshake = req._query.sid === undefined;
+  if (isHandshake) {
+    cookieParser()(req, res, next)
+  } else {
+    next();
+  }
+})
+io.engine.use((req, res, next) => {
+   const isHandshake = req._query.sid === undefined;
+  if (isHandshake) {
+    passport.authenticate('jwt', { session: false }, async (err, user, info) => {
+        if (user) {
+            passport.authenticate('jwt', { session: false, })(req, res, next)
+        } else {
+            next()
+        }
+    })(req, res, next)
+  } else {
+    next();
+  }
+})
+
+
 

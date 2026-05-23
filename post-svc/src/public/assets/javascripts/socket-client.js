@@ -1,39 +1,142 @@
-ws.addEventListener("message", (event) => {
-  const data = JSON.parse(event.data);
-  if (data.type === 'connection') {
-    console.log(data.message);
-  } else if (data.type === 'postcreated') {
-    // 1. Hide empty div if it exists
-    if (emptyDiv) emptyDiv.style.display = 'none';
+/** 
+ * Import the core Socket type from the library
+ * @typedef {import("socket.io-client").Socket<ServerToClientEvents, ClientToServerEvents>} TypedSocket
+ */
 
-    // 2. Create the wrapper
-    const postDiv = document.createElement('div');
+/** @type {TypedSocket} */
 
-    class PostUI {
-      static render(post) {
-        // Helper to generate category links
-        const renderCategories = (catgs) => {
-          if (!catgs || !catgs.length) return '';
-          return catgs.map(cat => `
+
+const socket = io(IONAMESPACE, {
+  transports: ["websocket"]
+})
+class postRooms {
+  constructor() {
+    this.postListDiv = document.getElementById("postlist");
+    /** @type {[]} */
+    this.postkeys = this.getPostskeys()
+  }
+  getPostskeys() {
+    let postkeys = []
+    for (let post of this.postListDiv.children) {
+      postkeys.push(post.id)
+    }
+    return postkeys
+  }
+  joinNewRoom(postkey) {
+    this.postkeys.push(postkey)
+    socket.emit("join-room", postkey)
+  }
+  joinPostRooms(catgName) {
+    if (catgName) this.postkeys.push(...catgName.split(","))
+    socket.emit("join-room", this.postkeys)
+  }
+}
+const socketRooms = new postRooms();
+
+const initSocket = CATGNAME ? socketRooms.joinPostRooms(CATGNAME): socketRooms.joinPostRooms()
+
+socket.on("connected", message => {
+  console.log(message)
+})
+socket.on("room-joined", message => console.log(message));
+const locks = new Set();
+socket.on("postcreated", post => {
+  if (locks.has(post.key)) return;
+  locks.add(post.key);
+  if (emptyDiv) emptyDiv.style.display = 'none';
+
+  // 2. Create the wrapper
+  const postDiv = document.createElement('div');
+
+  postDiv.innerHTML = PostUI.render(post)
+  postlist.prepend(postDiv);
+  feather.replace();
+  socketRooms.joinNewRoom(post.key)
+  updatePageUI()
+})
+socket.on("postdestroyed", postkey => {
+  const postCard = document.getElementById(postkey);
+  const postInfo = document.getElementById(postkey + "-info");
+  const postLink = document.getElementById(postkey + "-link");
+
+  if (postCard && postLink) {
+    // Disable link
+    postLink.onclick = (event) => event.preventDefault();
+    postLink.removeAttribute("href");
+
+    // Visual updates to look "Deleted"
+    postCard.classList.add("opacity-50", "grayscale", "cursor-not-allowed");
+
+    if (postInfo) {
+      postInfo.textContent = "Deleted";
+      postInfo.className = "badge badge-error badge-sm";
+    }
+  }
+  updatePageUI()
+})
+socket.on("postupdated", post => {
+  const infoSpan = document.getElementById(`${post.key}-info`)
+  const postBody = document.getElementById(`${post.key}-body`)
+  postBody.textContent = post.body;
+  infoSpan.textContent = "Updated"
+  infoSpan.classList.remove("hidden")
+  updatePageUI()
+})
+socket.on("commentcreated", (postkey) => {
+  const cSpan = document.getElementById(postkey + "-newcomments")
+  const change = Number(cSpan.textContent) + 1;
+  cSpan.classList.remove("hidden");
+  cSpan.textContent = (change < 0) ? change : "+" + change;
+  const infoSpan = document.getElementById(`${postkey}-info`)
+  if (change > 0) {
+    infoSpan.textContent = "New Comment"
+    infoSpan.classList.remove("hidden")
+  } else if (change == 0) {
+    cSpan.classList.add("hidden");
+    infoSpan.classList.add("hidden")
+  }
+  updatePageUI()
+})
+socket.on("commentdestroyed", (postkey) => {
+  const cSpan = document.getElementById(postkey + "-newcomments")
+  const change = Number(cSpan.textContent) - 1;
+  cSpan.textContent = change
+  cSpan.classList.remove("hidden");
+  const infoSpan = document.getElementById(`${postkey}-info`)
+  if (change < 0) {
+    infoSpan.classList.remove("hidden")
+    infoSpan.textContent = "Comment Deleted"
+  } else if (change == 0) {
+    cSpan.classList.add("hidden");
+    infoSpan.classList.add("hidden")
+  }
+  updatePageUI()
+})
+class PostUI {
+  static render(post) {
+    // Helper to generate category links
+    const renderCategories = (catgs) => {
+      if (!catgs || !catgs.length) return '';
+      return catgs.map(cat => `
         <a href="/explore/${cat.catgName}"
            class="text-[10px] font-black uppercase text-primary/90 tracking-wide hover:underline">
            #${cat.catgName}
         </a>
       `).join('');
-        };
+    };
 
-        // Helper for conditional cover photo
-        const renderCover = (coverPic, key, title) => {
-          if (!coverPic) return '';
-          return `
+    // Helper for conditional cover photo
+    const renderCover = (coverPic, key, title) => {
+      if (!coverPic) return '';
+      return `
         <a href="/posts/view?key=${key}"
            class="block mb-4 aspect-16/8 overflow-hidden rounded-2xl border border-base-200 bg-base-200/30">
           <img src="${coverPic}" alt="${title}" class="w-full h-full object-cover rounded-2xl" />
         </a>
       `;
-        };
+    };
 
-        return `
+    return `
     <div id="${post.key}"
       class="card bg-base-200/60 dark:bg-base-200/50 border border-base-200 shadow-sm hover:border-base-300 transition-colors mb-2">
 
@@ -104,46 +207,9 @@ ws.addEventListener("message", (event) => {
         </div>
       </div>
     </div>`;
-      }
-    }
-    postDiv.innerHTML = PostUI.render(data.post)
-    postlist.prepend(postDiv);
-    feather.replace();
-  } else if (data.type === 'postdestroyed') {
-    const postCard = document.getElementById(data.key);
-    const postInfo = document.getElementById(data.key + "-info");
-    const postLink = document.getElementById(data.key + "-link");
-
-    if (postCard && postLink) {
-      // Disable link
-      postLink.onclick = (event) => event.preventDefault();
-      postLink.removeAttribute("href");
-
-      // Visual updates to look "Deleted"
-      postCard.classList.add("opacity-50", "grayscale", "cursor-not-allowed");
-
-      if (postInfo) {
-        postInfo.textContent = "Deleted";
-        postInfo.className = "badge badge-error badge-sm";
-      }
-    }
-  } else if (data.type === "commentcreated") {
-    const cSpan = document.getElementById(data.postkey + "-comments")
-    cSpan.textContent = Number(cSpan.textContent) + 1;
-    const infoSpan = document.getElementById(`${data.postkey}-info`)
-    infoSpan.textContent = "New Comment"
-
-  } else if (data.type === "commentdestroyed") {
-    const cSpan = document.getElementById(data.postkey + "-comments")
-    cSpan.textContent = Number(cSpan.textContent) - 1;
-    const infoSpan = document.getElementById(`${data.postkey}-info`)
-    infoSpan.textContent = "Comment deleted"
-
-  } else if (data.type === "postupdated") {
-    const infoSpan = document.getElementById(`${data.post.key}-info`)
-    infoSpan.textContent = "Updated"
   }
-});
+}
+
 class PaginationUI {
   static render({ total, limit, current, baseUrl }) {
     const totalPages = Math.ceil(total / limit) || 1;
@@ -192,3 +258,4 @@ class PaginationUI {
     `;
   }
 }
+
