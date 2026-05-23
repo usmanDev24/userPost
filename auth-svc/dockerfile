@@ -18,7 +18,7 @@ RUN mkdir /auth-svc
 WORKDIR /auth-svc
 COPY --from=install /temp/dev/node_modules  node_modules
 COPY . .
-RUN  bun run prisma-dev generate
+RUN  bunx --bun  prisma --config=./src/prisma.config.ts generate
 EXPOSE 5859
 CMD [ "bun", "run", "dev" ]
 

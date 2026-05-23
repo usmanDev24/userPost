@@ -11,7 +11,7 @@
     "dev": "NODE_ENV=development dotenvx run -f .env.development -- cross-env DEBUG=users:* bun  ./src/user-server.mjs",
     "prisma-pro": "NODE_ENV=production dotenvx run -f .env.production  -- bunx --bun prisma --config=./src/prisma.config.ts",
     "prisma-dev": "dotenvx run -f .env.development -- bunx  --bun prisma --config=./src/prisma.config.ts",
-    "build": "bun run prisma-pro generate  && tsc"
+    "build": "bunx --bun  prisma --config=./src/prisma.config.ts generate  && tsc"
   },
   "author": "Usman Ghani",
   "license": "",

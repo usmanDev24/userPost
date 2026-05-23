@@ -19,7 +19,7 @@ RUN mkdir /post-svc
 WORKDIR /post-svc
 COPY --from=install /temp/dev/node_modules  node_modules
 COPY . .
-RUN  bun run prisma-dev generate
+RUN  bunx --bun  prisma --config=./src/prisma.config.ts generate
 EXPOSE 3000
 CMD [ "bun", "run", "dev" ]
 
