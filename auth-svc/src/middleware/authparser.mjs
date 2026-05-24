@@ -32,14 +32,13 @@ export default async function authorizationParser(req, res, next) {
     }
   } else if (scheme.toLowerCase() === 'bearer') {
     try {
-      const decoded = jwt.verify(credentials, process.env.BEARER_TOKEN_PRIVATEKEY)
-      const {username, password} = decoded
+      const decoded = jwt.verify(credentials, process.env.BEARER_TOKEN_PRIVATEKEY);
+      const [username, password] = decoded.split(":")
       auth.bearer = {username: username, password, password}
     } catch (error) {
-      
+      console.error(error)
     }
   }
-  
   req.authorization = auth;
   return next();
 }

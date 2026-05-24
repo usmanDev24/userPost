@@ -18,20 +18,7 @@ server.use(express.urlencoded({ limit: "3000kb" }))
 var apiKeys = [
   { user: process.env.APIKEY_USER, key: process.env.APIKEY_PASSWORD }];
 function check(req, res, next) {
-  if (req.authorization && req.authorization.basic) {
-    var found = false;
-    for (let auth of apiKeys) {
-      if (auth.key === req.authorization.basic.password
-        && auth.user === req.authorization.basic.username) {
-        found = true;
-        break;
-      }
-    }
-    if (found) next();
-    else {
-      res.status(401).send("Not authenticated");
-    }
-  } else if (req.authorization && req.authorization.bearer) {
+  if (req.authorization && req.authorization.bearer) {
     var found = false;
     for (let auth of apiKeys) {
       if (auth.key === req.authorization.bearer.password
