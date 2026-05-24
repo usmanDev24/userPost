@@ -159,7 +159,15 @@ router.post("/create", async (req, res, next) => {
     );
   }
 });
+router.get("/data/public-posts/:username", async (req, res, next) => {
+  const postlist = await postsUsersStore.getUserPosts(req.params.username, false)
+  res.send(postlist)
+})
 
+router.get("/data/liked-posts/:username", ensureAuthenticated, async (req, res, next) => {
+  const likedPostList = await postsUsersStore.getLikedPosts(req.params.username, false)
+  res.send(likedPostList)
+})
 
 router.get('/profile/:username', async (req, res, next) => {
   if (req.user && req.params.username === req.user.username) {

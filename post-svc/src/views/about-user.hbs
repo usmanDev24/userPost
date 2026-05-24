@@ -39,13 +39,13 @@
       </a>
 
       <a role="tab" class="tab font-black uppercase text-[11px] tracking-widest inline-flex items-center gap-1"
-        onclick="switchTab(event, 'my-posts')">
+        onclick="switchTab(event, 'my-posts', '/users/data/public-posts/{{user.username}}', 'liked-posts')">
         <span data-feather="grid" class="w-4 h-4 mb-1"></span>
         My Posts
       </a>
 
       <a role="tab" class="tab font-black uppercase text-[11px] tracking-widest inline-flex items-center gap-1"
-        onclick="switchTab(event, 'liked-posts')">
+        onclick="switchTab(event, 'liked-posts', '/users/data/liked-posts/{{user.username}}', 'my-posts')">
         <span data-feather="thumbs-up" class="w-4 h-4 mb-1"></span>
         Liked
       </a>
@@ -55,7 +55,6 @@
     <div id="settings" class=" tab-content block">
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
         <div class="card bg-base-100 border border-base-200 shadow-sm">
           <div class="card-body p-6">
             <div class="flex justify-between items-center mb-6">
@@ -158,238 +157,13 @@
         </div>
       </div>
     </div>
-
+    
     <div id="my-posts" class="tab-content">
-      <div class="grid grid-cols-1">
-        {{#if postlist}}
-        <h2 class="text-sm opacity-70 font-semibold px-2  tracking-wide uppercase mb-5 flex items-center gap-8">
-          <p><span class=" opacity-45 pr-2">Sort by:</span> Date Updated</p>
-
-          {{#if postLength}}
-          <span class="opacity-80 text-[10px] font-mono">Total: {{postLength}}</span>
-          {{/if}}
-        </h2>
-        <div id="postlist" class="flex flex-col gap-4">
-          {{#each postlist}}
-          <div id="{{key}}"
-            class="card bg-base-200/60 dark:bg-base-200/50 border border-base-200 shadow-sm hover:border-base-300 transition-colors mb-2">
-
-            <div class="card-body  p-2 sm:p-7">
-
-              <div class="flex items-start justify-between mb-3">
-                <div class="flex items-center gap-3">
-                  <div class="avatar">
-                    <div class="w-11 h-11 rounded-xl bg-base-200">
-                      <img src="{{auther.photoURL}}" alt="{{auther.username}}">
-                    </div>
-                  </div>
-                  <div class="flex flex-col">
-                    <a href="/users/profile/{{auther.username}}"
-                      class="font-black text-base tracking-tight hover:underline transition-all">
-                      {{auther.username}}
-                    </a>
-                    <div class="flex items-center gap-2 mt-0.5">
-                      <span data-time="{{updatedAt}}"
-                        class="updatedAt text-[11px] font-bold opacity-70 uppercase tracking-widest"></span>
-                      <span class="w-1 h-1 rounded-full bg-base-300"></span>
-                      <div class=" hidden sm:flex gap-2 flex-wrap">
-                        {{#each catgs}}
-                        <a href="/explore/{{catgName}}"
-                          class="text-[10px] font-black uppercase text-primary/90 tracking-wide hover:underline">
-                          #{{catgName}}
-                        </a>
-                        {{/each}}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div id="{{key}}-info-container" class="flex flex-col items-end">
-                  <span id="{{key}}-info"
-                    class="badge badge-success badge-outline border-2 text-[10px] font-black uppercase px-2 py-3 hidden rounded-lg"></span>
-                </div>
-              </div>
-
-              <div class="sm:hidden flex gap-2 mb-3">
-                {{#each catgs}}
-                <a href="/explore/{{catgName}}"
-                  class="text-[10px] font-black uppercase text-primary/90 tracking-wide hover:underline">
-                  #{{catgName}}
-                </a>
-                {{/each}}
-              </div>
-
-              <a id="{{key}}-link" href="/posts/view?key={{key}}" class="block mb-4 group cursor-pointer">
-                <h2 id="{{key}}-title"
-                  class="text-xl md:text-2xl font-black tracking-tight leading-[1.2] mb-2 group-hover:text-primary transition-colors">
-                  {{title}}
-                </h2>
-                <div id="{{key}}-body" class="text-base-content/80 text-sm md:text-base line-clamp-3 leading-relaxed">
-                  {{{body}}}
-                </div>
-              </a>
-
-              {{#if coverPic}}
-              <a href="/posts/view?key={{key}}"
-                class="block mb-4 aspect-16/8 overflow-hidden rounded-2xl border border-base-200 bg-base-200/30">
-                <img src="{{coverPic}}" alt="{{title}}" class="w-full h-full object-cover rounded-2xl" />
-              </a>
-              {{/if}}
-
-              <div class="flex items-center justify-between mt-2">
-                <div class="flex items-center gap-1">
-                  <button id="{{key}}-likebtn" data-postkey="{{key}}"
-                    class="like-btn btn btn-ghost btn-sm {{#unless @root.user}} btn-disabled {{/unless}} rounded-xl gap-2 text-primary ">
-                    <span id="{{key}}-likeLogo" data-feather="thumbs-up" class="h-4 w-4"></span>
-                    <span id="{{key}}-likes" class="font-black text-xs">{{_count.likes}}</span>
-                    <span id="{{key}}-newlikes"
-                      class=" relative hidden -top-4 -left-1 bg-primary/90 text-primary-content/90 text-[10px] rounded-full px-1.5 py-0.5">0</span>
-                  </button>
-
-                  <div class="btn btn-ghost btn-sm rounded-xl gap-2 text-info pointer-events-none">
-                    <span data-feather="message-circle" class="h-4 w-4"></span>
-                    <span id="{{key}}-comments" class="font-black text-xs">{{_count.comments}}</span>
-                    <span id="{{key}}-newcomments"
-                      class=" relative hidden -top-4 -left-1 bg-info/90 text-info-content/90 text-[10px] rounded-full px-1.5 py-0.5">0</span>
-                  </div>
-                </div>
-
-                <a href="/posts/view?key={{key}}"
-                  class="btn btn-ghost btn-sm rounded-xl px-4 text-xs font-black  tracking-widest hover:text-primary transition-colors">
-                  Read <span data-feather="arrow-right" class="h-5 w-9"></span>
-                </a>
-              </div>
-
-            </div>
-          </div>
-          {{/each}}
-        </div>
-        {{else}}
-        <div class="text-center py-20 bg-base-200/30 rounded-[3rem] border-2 border-dashed border-base-300">
-          <p class="font-black opacity-20 uppercase tracking-[0.3em]">No posts found</p>
-          <a href="/posts/add" class="btn btn-primary btn-sm mt-4 rounded-full">Create your first</a>
-        </div>
-        {{/if}}
-      </div>
+      <span class=" relative top-20 left-50 loading loading-spinner loading-md"></span>
     </div>
 
     <div id="liked-posts" class="tab-content">
-      <div class="grid grid-cols-1 gap-4">
-        {{#if likedPostList}}
-        <h2 class="text-sm  opacity-70 font-semibold px-2  tracking-widest mb-5 flex items-center gap-4">
-          <span>
-            Recently Liked
-          </span>
-
-          {{#if likedPostLength}}
-          <span class="opacity-80 text-[10px] font-mono">Total: {{likedPostLength}}</span>
-          {{/if}}
-        </h2>
-        <div id="postlist" class="flex flex-col gap-4">
-          {{#each likedPostList}}
-          {{#if key}}
-          <div id="{{key}}"
-            class="card bg-base-200/60 dark:bg-base-200/50 border border-base-200 shadow-sm hover:border-base-300 transition-colors mb-2">
-
-            <div class="card-body  p-2 sm:p-7">
-
-              <div class="flex items-start justify-between mb-3">
-                <div class="flex items-center gap-3">
-                  <div class="avatar">
-                    <div class="w-11 h-11 rounded-xl bg-base-200">
-                      <img src="{{auther.photoURL}}" alt="{{auther.username}}">
-                    </div>
-                  </div>
-                  <div class="flex flex-col">
-                    <a href="/users/profile/{{auther.username}}"
-                      class="font-black text-base tracking-tight hover:underline transition-all">
-                      {{auther.username}}
-                    </a>
-                    <div class="flex items-center gap-2 mt-0.5">
-                      <span data-time="{{updatedAt}}"
-                        class="updatedAt text-[11px] font-bold opacity-70 uppercase tracking-widest"></span>
-                      <span class="w-1 h-1 rounded-full bg-base-300"></span>
-                      <div class=" hidden sm:flex gap-2 flex-wrap">
-                        {{#each catgs}}
-                        <a href="/explore/{{catgName}}"
-                          class="text-[10px] font-black uppercase text-primary/90 tracking-wide hover:underline">
-                          #{{catgName}}
-                        </a>
-                        {{/each}}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div id="{{key}}-info-container" class="flex flex-col items-end">
-                  <span id="{{key}}-info"
-                    class="badge badge-success badge-outline border-2 text-[10px] font-black uppercase px-2 py-3 hidden rounded-lg"></span>
-                </div>
-              </div>
-
-              <div class="sm:hidden flex gap-2 mb-3">
-                {{#each catgs}}
-                <a href="/explore/{{catgName}}"
-                  class="text-[10px] font-black uppercase text-primary/90 tracking-wide hover:underline">
-                  #{{catgName}}
-                </a>
-                {{/each}}
-              </div>
-
-              <a id="{{key}}-link" href="/posts/view?key={{key}}" class="block mb-4 group cursor-pointer">
-                <h2 id="{{key}}-title"
-                  class="text-xl md:text-2xl font-black tracking-tight leading-[1.2] mb-2 group-hover:text-primary transition-colors">
-                  {{title}}
-                </h2>
-                <div id="{{key}}-body" class="text-base-content/80 text-sm md:text-base line-clamp-3 leading-relaxed">
-                  {{{body}}}
-                </div>
-              </a>
-
-              {{#if coverPic}}
-              <a href="/posts/view?key={{key}}"
-                class="block mb-4 aspect-16/8 overflow-hidden rounded-2xl border border-base-200 bg-base-200/30">
-                <img src="{{coverPic}}" alt="{{title}}" class="w-full h-full object-cover rounded-2xl" />
-              </a>
-              {{/if}}
-
-              <div class="flex items-center justify-between mt-2">
-                <div class="flex items-center gap-1">
-                  <button id="{{key}}-likebtn" data-postkey="{{key}}"
-                    class="like-btn btn btn-ghost btn-sm {{#unless @root.user}} btn-disabled {{/unless}} rounded-xl gap-2 text-primary ">
-                    <span id="{{key}}-likeLogo" data-feather="thumbs-up" class="h-4 w-4"></span>
-                    <span id="{{key}}-likes" class="font-black text-xs">{{_count.likes}}</span>
-                    <span id="{{key}}-newlikes"
-                      class=" relative hidden -top-4 -left-1 bg-primary/90 text-primary-content/90 text-[10px] rounded-full px-1.5 py-0.5">0</span>
-                  </button>
-
-                  <div class="btn btn-ghost btn-sm rounded-xl gap-2 text-info pointer-events-none">
-                    <span data-feather="message-circle" class="h-4 w-4"></span>
-                    <span id="{{key}}-comments" class="font-black text-xs">{{_count.comments}}</span>
-                    <span id="{{key}}-newcomments"
-                      class=" relative hidden -top-4 -left-1 bg-info/90 text-info-content/90 text-[10px] rounded-full px-1.5 py-0.5">0</span>
-                  </div>
-                </div>
-
-                <a href="/posts/view?key={{key}}"
-                  class="btn btn-ghost btn-sm rounded-xl px-4 text-xs font-black  tracking-widest hover:text-primary transition-colors">
-                  Read <span data-feather="arrow-right" class="h-5 w-9"></span>
-                </a>
-              </div>
-
-            </div>
-          </div>
-          {{/if}}
-          {{/each}}
-        </div>
-
-
-        {{else}}
-        <div class="text-center py-20 bg-base-200/30 rounded-[3rem] border-2 border-dashed border-base-300">
-          <p class="font-black opacity-20 uppercase tracking-[0.3em]">No liked posts</p>
-        </div>
-        {{/if}}
-      </div>
+      <span class="loading loading-spinner loading-lg"></span>
     </div>
 
   </div>

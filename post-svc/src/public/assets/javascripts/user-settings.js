@@ -1,4 +1,47 @@
-function switchTab(event, tabId) {
+async function fetchPosts(url) {
+  const res = await fetch(url).then(async res => await res.text());
+  return res
+
+}
+async function renderPosts(tabID, URL, toClean) {
+  document.getElementById(toClean).innerHTML = "";
+  const tabContentDiv = document.getElementById(tabID)
+  tabContentDiv.innerHTML = `<div class="w-fit m-auto " ><div class=" relative top-20 loading loading-spinner text-primary loading-md"></div></div>`
+  const postlist = JSON.parse(await fetchPosts(URL));
+  
+  let allPostsHTML = "";
+  for (let post of postlist) {
+    allPostsHTML += PostUI.render(post, "hidden");
+    socketRooms.joinNewRoom(post.key)
+  }
+  if (allPostsHTML == "") {
+    allPostsHTML = (tabID == "my-posts") ?
+     `<div id="empty-div" class="text-center py-20 bg-base-200/30 rounded-[3rem] border-2 border-dashed border-base-300">
+          <p class="font-black opacity-20 uppercase tracking-[0.3em]">No posts found</p>
+          <a href="/posts/add" class="btn btn-primary btn-sm mt-4 rounded-full">Create your first</a>
+        </div>` 
+      :
+      `<div class="text-center py-20 bg-base-200/30 rounded-[3rem] border-2 border-dashed border-base-300">
+          <p class="font-black opacity-20 uppercase tracking-[0.3em]">No liked posts</p>
+        </div>`
+  }
+  
+  const postlistid = (tabID == "my-posts")? "postlist" : "" ;
+  tabContentDiv.innerHTML = `<div class="grid grid-cols-1">
+        <h2 class="text-sm opacity-70 font-semibold px-2  tracking-wide uppercase mb-5 flex items-center gap-8">
+          <p><span class=" opacity-45 pr-2">Sorted by:</span> Recently Updated</p>
+          <span id="totalpubicposts" class="opacity-80 text-[10px] font-mono">Total : ${postlist.length}</span>
+        </h2>
+        <div id="${postlistid}" class="flex flex-col gap-4">
+          ${allPostsHTML}
+        </div>
+      </div>`;
+  feather.replace();
+  new Times().main()
+  new LikesControl().init()
+}
+async function switchTab(event, tabId, URL, toClean) {
+
   // 1. Remove active state from all tabs
   document.querySelectorAll('.tab').forEach(t => {
     t.classList.remove('tab-active');
@@ -14,6 +57,9 @@ function switchTab(event, tabId) {
 
   const activeContent = document.getElementById(tabId);
   activeContent.classList.add('block');
+
+  if (tabId != "settings  ") await renderPosts(tabId, URL, toClean)
+  
   const header = document.getElementsByTagName("header")[0]
 
   window.scrollTo({

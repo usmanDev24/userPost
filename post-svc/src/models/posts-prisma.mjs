@@ -122,7 +122,9 @@ export default class PrismaPostsStore {
   async close() {
     await prisma.$disconnect();
   }
-
+  async connectDB() {
+    await prisma.$connect()
+  }
   async create(key, title, body, autherId, imageURL, ...catgs) {
     const catgsData = [];
     const uniqeCatgs = new Set()

@@ -359,7 +359,7 @@
     {{/if}}
   </h2>
 
-  <div id="postlist" class="flex flex-col gap-6">
+  <div id="postlist" class="flex flex-col min-h-40 gap-6">
     {{#each postlist}}
     <div id="{{key}}"
       class="card bg-base-200/60 dark:bg-base-200/50 border border-base-200 shadow-sm hover:border-base-300 transition-colors mb-2">
@@ -498,8 +498,6 @@
 </div>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-  const postlist = document.getElementById('postlist');
-  const emptyDiv = document.getElementById('emptydiv'); // Reference to hide this if a post comes in
   const IONAMESPACE = "{{ioNameSpace}}"
   const CATGNAME = "{{catgName}}"
   const USERID = "{{user.id}}"
@@ -511,11 +509,42 @@
 
 <script src="/assets/javascripts/relative-time.js"></script>
 
-{{#unless homepage}}
+{{#if homepage}}
+<script>
+
+  async function fetchPosts(url) {
+    const res = await fetch(url).then(async res => await res.text());
+    return res
+
+  }
+  async function renderPosts(parentdiv, URL) {
+
+    const tabContentDiv = document.getElementById(parentdiv)
+    tabContentDiv.innerHTML = `<div class="w-fit m-auto mb-32 " >
+        <div class= "relative top-20  bg-base-200 rounded-2xl p-16">
+        <span class="  loading loading-spinner text-primary loading-lg"></span>
+        </div>
+    </div>`
+    const postlist = JSON.parse(await fetchPosts(URL));
+
+    let allPostsHTML = "";
+    for (let post of postlist) {
+      allPostsHTML += PostUI.render(post, "hidden");
+      socketRooms.joinNewRoom(post.key)
+    }
+    tabContentDiv.innerHTML = allPostsHTML
+    feather.replace();
+    new Times().main()
+    new LikesControl().init()
+  }
+  renderPosts("postlist", "/landing-page/posts")
+</script>
+
+
+{{else}}
 <script>
 
   const container = document.getElementById('pagination');
-
   container.innerHTML = PaginationUI.render({
     total: "{{total}}",       // Total posts in your DB
     limit: "{{limit}}",        // Items per page
@@ -524,4 +553,4 @@
   });
 
 </script>
-{{/unless}}
+{{/if}}

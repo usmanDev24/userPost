@@ -17,6 +17,7 @@ class postRooms {
   }
   getPostskeys() {
     let postkeys = []
+    if (!this.postListDiv?.children) return []
     for (let post of this.postListDiv.children) {
       postkeys.push(post.id)
     }
@@ -38,11 +39,14 @@ const initSocket = CATGNAME ? socketRooms.joinPostRooms(CATGNAME): socketRooms.j
 socket.on("connected", message => {
   console.log(message)
 })
-socket.on("room-joined", message => console.log(message));
+socket.on("room-joined", message => {});
 const locks = new Set();
 socket.on("postcreated", post => {
   if (locks.has(post.key)) return;
   locks.add(post.key);
+  const postlist = document.getElementById('postlist');
+  if (!postlist) return;
+  const emptyDiv = document.getElementById('emptydiv');
   if (emptyDiv) emptyDiv.style.display = 'none';
 
   // 2. Create the wrapper
@@ -113,7 +117,7 @@ socket.on("commentdestroyed", (postkey) => {
   updatePageUI()
 })
 class PostUI {
-  static render(post) {
+  static render(post, isNew = "") {
     // Helper to generate category links
     const renderCategories = (catgs) => {
       if (!catgs || !catgs.length) return '';
@@ -135,17 +139,17 @@ class PostUI {
         </a>
       `;
     };
-
+    const likeBtnAble = USERNAME ? "": "btn-disabled"
     return `
     <div id="${post.key}"
       class="card bg-base-200/60 dark:bg-base-200/50 border border-base-200 shadow-sm hover:border-base-300 transition-colors mb-2">
 
-      <div class="card-body p-4 sm:p-7">
+      <div class="card-body p-2 sm:p-7">
         <div class="flex items-start justify-between mb-3">
           <div class="flex items-center gap-3">
             <div class="avatar">
               <div class="w-11 h-11 rounded-xl bg-base-200">
-                <img src="${post.auther.photoURL}" alt="${post.auther.username}">
+                <img src="${post.auther?.photoURL}" alt="${post.auther.username}">
               </div>
             </div>
             <div class="flex flex-col">
@@ -166,7 +170,7 @@ class PostUI {
 
           <div id="${post.key}-info-container" class="flex flex-col items-end">
             <span id="${post.key}-info"
-              class="badge badge-success badge-outline border-2 text-[10px] font-black uppercase px-2 py-3 rounded-lg">New</span>
+              class="badge ${isNew} badge-success badge-outline border-2 text-[10px] font-black uppercase px-2 py-3 rounded-lg">New</span>
           </div>
         </div>
 
@@ -188,18 +192,18 @@ class PostUI {
 
         <div class="flex items-center justify-between mt-2">
           <div class="flex items-center gap-1">
-            <button data-postkey="${post.key}"
-              class="like-btn flex items-center gap-2 px-3 py-2 rounded-xl text-base-content/60 hover:text-success hover:bg-success/10 transition-colors">
+            <button id="${post.key}-likebtn" data-postkey="${post.key}" class="like-btn btn btn-ghost btn-sm ${likeBtnAble} rounded-xl gap-2 text-primary ">
               <span id="${post.key}-likeLogo" data-feather="thumbs-up" class="h-4 w-4"></span>
               <span id="${post.key}-likes" class="font-black text-xs">${post._count.likes}</span>
+              <span id="${post.key}-newlikes" class=" relative hidden -top-4 -left-1 bg-primary/90 text-primary-content/90 text-[10px] rounded-full px-1.5 py-0.5">0</span>
             </button>
 
-            <div class="flex items-center gap-2 px-3 py-2 rounded-xl text-base-content/60 cursor-default">
+            <div class="btn btn-ghost btn-sm rounded-xl gap-2 text-info pointer-events-none">
               <span data-feather="message-circle" class="h-4 w-4"></span>
               <span id="${post.key}-comments" class="font-black text-xs">${post._count.comments}</span>
+              <span id="${post.key}-newcomments" class=" relative hidden -top-4 -left-1 bg-info/90 text-info-content/90 text-[10px] rounded-full px-1.5 py-0.5">0</span>
             </div>
           </div>
-
           <a href="/posts/view?key=${post.key}"
             class="btn btn-ghost btn-sm rounded-xl px-4 text-xs font-black tracking-widest hover:text-primary transition-colors">
             Read <span data-feather="arrow-right" class="h-5 w-9"></span>

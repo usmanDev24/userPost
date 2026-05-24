@@ -14,8 +14,8 @@ class LikesControl {
   }
   async init() {
     if (USERID)
-    await this.setLikes()
-    this.attachEvents()
+      await this.setLikes()
+    this.attachLikeBtnEvents()
   }
   async setLikes() {
     const res = await fetch('/users/likes/keys').then(async res => await res.text())
@@ -31,7 +31,7 @@ class LikesControl {
     })
 
   }
-  attachEvents() {
+  attachSocketEvents() {
     SOCKET.on("likecreated", (postkey, userid) => {
       if (USERID == userid) {
         const btn = document.getElementById(`${postkey}-likebtn`)
@@ -47,6 +47,7 @@ class LikesControl {
         updatePageUI()
       }
     })
+
     SOCKET.on("likedestroyed", (postkey, userid) => {
       if (USERID == userid) {
         const btn = document.getElementById(`${postkey}-likebtn`)
@@ -62,6 +63,9 @@ class LikesControl {
         updatePageUI()
       }
     })
+  }
+
+  attachLikeBtnEvents() {
     if (!USERID) return
     Array.from(this.likeButtons).forEach((btn, i) => {
       btn.addEventListener("click", async (event) => {
@@ -136,5 +140,7 @@ class LikesControl {
 
 }
 window.addEventListener("load", () => {
-  new LikesControl().init()
+  const likeControl = new LikesControl();
+  likeControl.init();
+  likeControl.attachSocketEvents();
 })
