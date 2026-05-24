@@ -8,6 +8,7 @@ import { io } from "../app.mjs";
 import { commentStore } from "./posts.mjs";
 export const router = express.Router();
 export const postsStore = new PrismaPostsStore();
+
 import { PrimsaLikesStore } from "../models/likes-prisma.mjs";
 import { likeStore } from "./posts.mjs";
 
@@ -59,6 +60,7 @@ export function initSocket() {
     });
     io.of("/index").to("All Posts").emit("postcreated", post)
     io.of("/index").to("landing").emit("postcreated", post)
+    io.of("/index").to(post.auther.username).emit("postcreated", post)
   })
   PrismaPostsStore.Events.on("postdestroyed", key => {
     io.of("/index").to(key).emit("postdestroyed", key)
@@ -192,21 +194,12 @@ router.get("/your-feed", async (req, res, next) => {
     ioNameSpace: "/index"
   });
 });
+
 router.get("/", async (req, res, next) => {
   try {
-    const keylist = (await postsStore.keylist()).filter((v, i) => i <= 2);
-    const keyPromises = keylist.map((key) => {
-      return postsStore.read(key);
-    });
-
-    let postlist = await Promise.all(keyPromises);
-    if (postlist.length === 0) {
-      postlist = false;
-    }
-
     res.render("index", {
       title: "userPost",
-      postlist: postlist,
+      postlist: true,
       homepage: true,
       user: req.user ? req.user : undefined,
       level: req.query.level,
@@ -219,7 +212,18 @@ router.get("/", async (req, res, next) => {
     next(err);
   }
 });
+router.get("/landing-page/posts" , async (req, res, next) => {
+   const keylist = (await postsStore.keylist()).filter((v, i) => i <= 2);
+    const keyPromises = keylist.map((key) => {
+      return postsStore.read(key);
+    });
 
+    let postlist = await Promise.all(keyPromises);
+    if (postlist.length === 0) {
+      postlist = [];
+    }
+    res.send(postlist) 
+})
 router.get("/privacy-policy", (req, res, next) => {
   res.render("privacy", {
     title: "Privacy Policy",

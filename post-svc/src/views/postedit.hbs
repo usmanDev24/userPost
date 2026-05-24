@@ -13,8 +13,8 @@
     <p class="text-base-content/60 mt-3 text-lg">Organize your thoughts and share them with the userPost community.</p>
   </div>
 
-  <div class="bg-base-100 rounded-[2.5rem] md:border border-base-300 shadow-base-content/5 overflow-hidden">
-    <form id="postForm" class="p-2 md:p-12 space-y-10" method='POST' action='/posts/save' enctype="multipart/form-data">
+  <div class="bg-base-100 rounded-2xl md:border border-base-300 shadow-base-content/5 overflow-hidden">
+    <form id="postForm" class="py-2 md:p-12 space-y-10" method='POST' action='/posts/save' enctype="multipart/form-data">
 
       {{#if docreate}}
       <input type='hidden' name='docreate' value="create">
@@ -118,11 +118,11 @@
     </p>
   </div>
 
-  <div class="prose-container bg-base-100 border border-base-300 rounded-xl overflow-hidden focus-within:border-success/50 transition-all">
+  <div class=" bg-base-100 border border-base-300 rounded-xl overflow-hidden focus-within:border-success transition-all">
     <input required id="x" type="hidden" name="body">
     <trix-toolbar class="border-b border-base-200 bg-base-200/30 p-2" id="my_toolbar"></trix-toolbar>
     <trix-editor toolbar="my_toolbar" input="x"
-      class="prose max-w-full p-6 md:p-8 min-h-100 focus:outline-none">
+      class=" prose max-w-full p-6 md:p-8 focus:outline-none">
       {{#if post}}{{{post.body}}}{{/if}}
     </trix-editor>
   </div>
@@ -132,7 +132,7 @@
         <a href="/" class="btn btn-ghost rounded-full px-8 order-2 sm:order-1">Discard Draft</a>
 
         <button id="submit" type='submit'
-          class="btn btn-success btn-wide rounded-full gap-2 shadow-lg shadow-success/20 order-1 sm:order-2">
+          class="btn btn-success px-8 sm:btn-wide rounded-full gap-2 shadow-lg shadow-success/20 order-1 sm:order-2">
           <span class="font-bold">{{#if docreate}}Publish Post{{else}}Update Post{{/if}}</span>
           <span data-feather="send" class="h-4 w-4"></span>
         </button>
