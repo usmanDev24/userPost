@@ -14,9 +14,10 @@
         </h1>
 
         <p class="text-lg opacity-80 leading-relaxed mb-10 max-w-md font-medium">
-          A modern content platform engineered by <a class="text-base-content font-bold underline decoration-success/50"
-            href="/about-userPost#usman-ghani" target="_blank">Usman Ghani</a> to demonstrate
-          excellence in full-stack architecture, real-time interactions, and modern UI design.
+          userPost is an open, real-time blogging platform created by <a
+            class="text-base-content font-bold underline decoration-success/50" href="/about-userPost#usman-ghani"
+            target="_blank">Usman Ghani</a>. It allows users to write articles, organize posts by categories, and
+          participate in live comment discussions.
         </p>
         {{#unless user}}
         <div class="grid grid-cols-2 gap-4 mb-10 text-left">
@@ -181,7 +182,8 @@
                   <span data-feather="shield" class="h-4 w-4"></span>
                 </div>
                 <h4 class="text-sm font-black uppercase tracking-tight mb-1">Auth System</h4>
-                <p class="text-sm opacity-80 leading-relaxed">Secure OAuth 2.0 Google integration and session handling.
+                <p class="text-sm opacity-80 leading-relaxed">Secure registration and profile login via Google OAuth
+                  2.0.
                 </p>
               </div>
 
@@ -328,8 +330,7 @@
 
   {{#if postlist}}
 
-  <div
-    class="flex flex-row flex-wrap items-center gap-2 sm:gap-4 text-sm tracking-wide sm:px-2  mb-5">
+  <div class="flex flex-row flex-wrap items-center gap-2 sm:gap-4 text-sm tracking-wide sm:px-2  mb-5">
     {{#if homepage}}Recent Posts{{else}}
     <span class="hidden md:inline text-sm font-medium">Sort: </span>
     <div class="dropdown dropdown-bottom">
