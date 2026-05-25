@@ -57,17 +57,14 @@ async function switchTab(event, tabId, URL, toClean) {
 
   const activeContent = document.getElementById(tabId);
   activeContent.classList.add('block');
-
-  if (tabId != "settings  ") await renderPosts(tabId, URL, toClean)
-  
   const header = document.getElementsByTagName("header")[0]
 
   window.scrollTo({
     top: header.clientHeight,
     behavior: 'smooth'
   });
-  // 4. IMPORTANT: Re-run Feather icons and Scroll Observer 
-  // so icons show up in the newly visible tab
+  if (tabId != "settings  ") await renderPosts(tabId, URL, toClean)
+  
   if (typeof feather !== 'undefined') feather.replace();
 }
 const photoInput = document.getElementById("photo_input");

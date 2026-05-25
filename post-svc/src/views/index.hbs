@@ -328,36 +328,88 @@
 
   {{#if postlist}}
 
-  <h2
-    class=" flex flex-row flex-wrap items-center gap-2 sm:gap-4 text-sm font-bold opacity-80 uppercase sm:px-2 tracking-widest mb-5">
+  <div
+    class="flex flex-row flex-wrap items-center gap-2 sm:gap-4 text-sm tracking-wide sm:px-2  mb-5">
     {{#if homepage}}Recent Posts{{else}}
-    <span class=" hidden md:inline">Sort: </span>
-    <select class="select select-sm md:select-md  select-bordered rounded-2xl w-fit bg-base-100 focus:border-success">
+    <span class="hidden md:inline text-sm font-medium">Sort: </span>
+    <div class="dropdown dropdown-bottom">
 
-      <a href="{{baseUrl}}?sort=latest&limit={{limit}}&page=1">
-        <option {{#if latest}} selected {{/if}}>
-          Latest </option>
-      </a>
-      <a href="{{baseUrl}}?sort=oldest&limit={{limit}}&page=1">
-        <option {{#unless latest}} selected {{/unless}}>
-          Oldest</option>
-      </a>
+      <div tabindex="0" role="button"
+        class=" rounded-2xl border px-2 py-1 sm:px-3 sm:py-1.5 w-fit bg-base-100 flex items-center justify-between gap-2 focus:border-success">
+        <span>{{#if latest}}Latest{{else}}Oldest{{/if}}</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-60" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
 
-    </select>
-    <span class="inline text-xs md:text:sm ">Limit: </span>
-    <select
-      class="select select-bordered py-1 select-sm md:select-md rounded-2xl w-max bg-base-100 focus:border-success">
-      {{#each limitList}}
-      <a href="{{@root.baseUrl}}?sort={{@root.sort}}&limit={{limits}}&page=1">
-        <option {{#if checked}} selected {{/if}}>{{limits}}</option>
-      </a>
-      {{/each}}
-    </select>
+      <ul tabindex="0"
+        class="dropdown-content z-1 menu p-2 mt-1 overflow-auto shadow-xl bg-base-100 rounded-xl w-32  border border-base-200">
+        <li>
+          <a href="{{baseUrl}}?sort=latest&limit={{limit}}&page=1"
+            class="flex justify-between items-center {{#if latest}}active text-success-content bg-success{{/if}}">
+            Latest
+            {{#if latest}}
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+            </svg>
+            {{/if}}
+          </a>
+        </li>
+        <li>
+          <a href="{{baseUrl}}?sort=oldest&limit={{limit}}&page=1"
+            class="flex justify-between items-center {{#unless latest}}active text-success-content bg-success{{/unless}}">
+            Oldest
+            {{#unless latest}}
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+            </svg>
+            {{/unless}}
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <span class="inline text-xs md:text-sm font-medium ml-4">Limit: </span>
+    <div class="dropdown dropdown-bottom">
+      <div tabindex="0" role="button"
+        class=" rounded-2xl border px-2 py-1 sm:px-3 sm:py-1.5 w-fit bg-base-100 flex items-center justify-between gap-2 focus:border-success">
+        <span>
+          {{#each limitList}}
+          {{#if checked}}{{limits}}{{/if}}
+          {{/each}}
+        </span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-60" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+
+      <ul tabindex="0"
+        class="dropdown-content menu  z-1 p-2 mt-1 shadow-xl bg-base-100 rounded-xl w-32   border border-base-200">
+        {{#each limitList}}
+        <li>
+          <a href="{{@root.baseUrl}}?sort={{@root.sort}}&limit={{limits}}&page=1"
+            class="flex justify-between items-center {{#if checked}}active text-success-content bg-success{{/if}}">
+            {{limits}}
+            {{#if checked}}
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+            </svg>
+            {{/if}}
+          </a>
+        </li>
+        {{/each}}
+      </ul>
+    </div>
     <span class=" text-xs md:text-sm tracking-wide  pl-2 sm:pl-4 p-2 ">
       page {{current}} of {{totalPages}}
     </span>
     {{/if}}
-  </h2>
+  </div>
 
   <div id="postlist" class="flex flex-col min-h-40 gap-6">
     {{#each postlist}}
@@ -428,16 +480,19 @@
 
         <div class="flex items-center justify-between  pl-0 -ml-2 sm:ml-0">
           <div class="flex items-center justify-between gap-1">
-            <button id="{{key}}-likebtn" data-postkey="{{key}}" class="like-btn btn btn-ghost btn-sm {{#unless @root.user}} btn-disabled {{/unless}} rounded-xl gap-2 text-primary ">
+            <button id="{{key}}-likebtn" data-postkey="{{key}}"
+              class="like-btn btn btn-ghost btn-sm {{#unless @root.user}} btn-disabled {{/unless}} rounded-xl gap-2 text-primary ">
               <span id="{{key}}-likeLogo" data-feather="thumbs-up" class="h-4 w-4"></span>
               <span id="{{key}}-likes" class="font-black text-xs">{{_count.likes}}</span>
-              <span id="{{key}}-newlikes" class=" relative hidden -top-4 -left-3 sm:-left-1 bg-primary/90 text-primary-content/90 text-[10px] rounded-full px-1 py-0">0</span>
+              <span id="{{key}}-newlikes"
+                class=" relative hidden -top-4 -left-3 sm:-left-1 bg-primary/90 text-primary-content/90 text-[10px] rounded-full px-1 py-0">0</span>
             </button>
 
             <div class="btn btn-ghost btn-sm rounded-xl gap-2 text-info pointer-events-none">
               <span data-feather="message-circle" class="h-4 w-4"></span>
               <span id="{{key}}-comments" class="font-black text-xs">{{_count.comments}}</span>
-              <span id="{{key}}-newcomments" class=" relative hidden -top-4 -left-3 sm:-left-1 bg-info/90 text-info-content/90 text-[10px] rounded-full px-1 py-0">0</span>
+              <span id="{{key}}-newcomments"
+                class=" relative hidden -top-4 -left-3 sm:-left-1 bg-info/90 text-info-content/90 text-[10px] rounded-full px-1 py-0">0</span>
             </div>
           </div>
 
