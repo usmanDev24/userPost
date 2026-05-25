@@ -11,6 +11,25 @@
 @theme {
   --breakpoint-xs : 28rem
 }
+/**
+These two custom themes:
+     1: greenp
+     2: greenp-dark
+
+    For these two themes:
+    I do not allow anyone to use , change, modify or redistribute in 
+    any way or form.
+
+    ------>>>>    
+                  And I request you to please do not use this theme 
+                  in any way or form,
+                  as this is for only my personall projetcs. 
+
+    ------<<<<<<
+
+    Copywrite c 2026 Usman Ghani ( UsmanDev24 )
+    All Rights Reserved.
+*/
 @plugin "daisyui/theme" {
   name: "greenp";
   default: true;
