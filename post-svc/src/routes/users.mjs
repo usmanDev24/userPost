@@ -129,7 +129,7 @@ router.get("/create", async (req, res, next) => {
 });
 router.post("/create", async (req, res, next) => {
   try {
-    const isUser = await usersModel.findUserName(req.body.username);
+    const isUser = await usersModel.findUserName(req.body.username.toLowerCase());
     if (isUser.username) {
       res.redirect(
         "/users/create?level=warning&massage=" +
@@ -140,7 +140,7 @@ router.post("/create", async (req, res, next) => {
   } catch (error) { }
 
   const user = await usersModel.create(
-    req.body.username,
+    req.body.username.toLowerCase(),
     req.body.password,
     "Local",
     null,
@@ -401,6 +401,7 @@ passport.use(
     },
     async (req, username, password, done) => {
       try {
+        username = username.toLowerCase()
         let check = await usersModel.passwordCheck(username, password);
         if (check.check) {
           const user = await usersModel.find(check.id);

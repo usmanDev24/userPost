@@ -45,6 +45,7 @@ server.post('/create-user', async (req, res, next) => {
   })
   if (isAlreadyUser) {
     res.status(500).send("Already a User has username: " + req.body.username)
+    return
   }
   let result = await createUser(req);
   res.contentType('json');

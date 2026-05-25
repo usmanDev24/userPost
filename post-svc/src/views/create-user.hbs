@@ -100,3 +100,10 @@
     </form>
   </div>
 </div>
+<script>
+  const userinput = document.getElementsByName("username")[0];
+  userinput.onchange =  () => { 
+    userinput.value = userinput.value.toLowerCase()
+  }
+  
+</script>

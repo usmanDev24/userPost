@@ -92,9 +92,9 @@ router.get("/explore/:catgName", async (req, res, next) => {
   const pageNo = req.query.page ? Number(req.query.page) : 1;
   const sort = req.query.sort === "oldest" ? "oldest" : "latest";
   if (sort === "oldest") keylist.reverse()
-  const limit = req.query.limit ? Number(req.query.limit) : 5;
+  const limit = req.query.limit ? Number(req.query.limit) : 10;
 
-  let limitList = [{ limits: 3 }, { limits: 5 }, { limits: 7 }, { limits: 10 }]
+  let limitList = [{ limits: 5 }, { limits: 10 }, { limits: 15 }, { limits: 20 }]
 
   limitList = limitList.map(v => {
     if (v.limits === limit) return { limits: v.limits, checked: true }
@@ -106,7 +106,7 @@ router.get("/explore/:catgName", async (req, res, next) => {
     pageKeys.map((key) => postsStore.read(key)),
   );
 
-  let baseUrl = req.url.substring(0, req.url.lastIndexOf("?"));
+  let baseUrl = "/explore/"+ encodeURIComponent(req.params.catgName);
 
   res.render("index", {
     title: "Exploring " + req.params.catgName,
@@ -159,9 +159,9 @@ router.get("/your-feed", async (req, res, next) => {
   const pageNo = req.query.page ? Number(req.query.page) : 1;
   const sort = req.query.sort === "oldest" ? "oldest" : "latest";
   if (sort === "oldest") keylist.reverse()
-  const limit = req.query.limit ? Number(req.query.limit) : 5;
+  const limit = req.query.limit ? Number(req.query.limit) : 10;
 
-  let limitList = [{ limits: 3 }, { limits: 5 }, { limits: 7 }, { limits: 10 }]
+  let limitList = [{ limits: 5 }, { limits: 10 }, { limits: 15 }, { limits: 20 }]
 
   limitList = limitList.map(v => {
     if (v.limits === limit) return { limits: v.limits, checked: true }
@@ -174,7 +174,7 @@ router.get("/your-feed", async (req, res, next) => {
     pageKeys.map((key) => postsStore.read(key)),
   );
 
-  const baseUrl = req.url.substring(0, req.url.lastIndexOf("?"));
+  const baseUrl = "/your-feed"
   res.render("index", {
     title: "Your Personal Feed",
     postlist: postlist,
