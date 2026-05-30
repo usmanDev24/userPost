@@ -1,6 +1,6 @@
 # userPost
 
-**userPost** is a full-stack content platform where users can create  posts, manage their accounts, and interact with structured content.  
+ [**userPost**](https://userpost.usman-ghani.dev) is a full-stack content platform where users can create  posts, manage their accounts, and interact with structured content.  
 
 > Built as a serious engineering project, not a demo CRUD app.
 
@@ -13,6 +13,7 @@
 - Account & profile management
 - Secure API-driven architecture
 - Exploring posts by categories
+- Live Comments, and Likes using websockets.
 
 ---
 
