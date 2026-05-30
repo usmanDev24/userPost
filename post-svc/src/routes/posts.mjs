@@ -9,7 +9,7 @@ import { PrismaPostCatgStore } from "../models/catg-prisma.mjs";
 import * as crpto from 'node:crypto';
 import sanitizeHtml from 'sanitize-html';
 import multer from "multer";
-import { io } from "../app.mjs";
+
 
 const debug = DBG('posts:routs_posts.mjs')
 const dbgerror = DBG('posts:error')
@@ -21,10 +21,7 @@ const posts = new PrismaPostsStore();
 import { picStore } from "./users.mjs";
 export const router = express.Router();
 
-export function initSocket() {
-  
-  
-}
+
 //Add posts.
 router.get('/add', ensureAuthenticated, async (req, res, next) => {
   const catgNameList = (await catgsStore.getCategoriesNames()).map(v => {

@@ -69,13 +69,13 @@ router.get(
 
     res.cookie("sess_re_Tok", refTokenId, {
       httpOnly: true,
-      sameSite: "lax", secure: true, maxAge: 1000 * 60 * 60 * 24 * 30
+      sameSite: "lax", secure: process.env.NODE_ENV === "production", maxAge: 1000 * 60 * 60 * 24 * 30
     })
 
     res.cookie(sessionCookieName, token, {
       httpOnly: true, sameSite: "lax",
       maxAge: 1000 * 60 * 15,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
     })
     res.redirect("/users/profile/" + req.user.username)
   }
@@ -99,12 +99,12 @@ router.post(
 
     res.cookie("sess_re_Tok", refTokenId, {
       httpOnly: true,
-      sameSite: "lax", secure: true, maxAge: 1000 * 60 * 60 * 24 * 30
+      sameSite: "lax", secure: process.env.NODE_ENV === "production", maxAge: 1000 * 60 * 60 * 24 * 30
     })
 
     res.cookie(sessionCookieName, token, {
       httpOnly: true, sameSite: "lax",
-      maxAge: 1000 * 60 * 15, secure: true
+      maxAge: 1000 * 60 * 15, secure: process.env.NODE_ENV === "production"
     })
 
     res.redirect(`/users/profile/${req.user.username}`)

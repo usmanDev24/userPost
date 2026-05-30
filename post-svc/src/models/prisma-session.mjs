@@ -19,10 +19,11 @@ export async function addSession(hash, userId) {
   return sess;
 }
 
-export async function getSession(id) {
-  const hashId = crypto.createHash("sha256").update(id).digest("hex");
+export async function getSession(token) {
+  // Session id is a hash of token
+  const sessionID = crypto.createHash("sha256").update(token).digest("hex");
   const sess = await prisma.session.findUnique({
-    where: { id: hashId },
+    where: { id: sessionID },
     include: { user: { omit: { photo: true, photoType: true, photo_updatedAt: true } } }
   })
   log("Session Read")
@@ -57,7 +58,10 @@ export async function restoreSession(req, res, next) {
   next()
 }
 export function genRefTokenHash() {
+  //token will be saved to cookie
   const token = crypto.randomBytes(25).toString("hex");
+
+  // THe hash will be saved as ID in database for user session data
   const hash = crypto.createHash("sha256").update(token).digest("hex");
   return [token, hash]
 }

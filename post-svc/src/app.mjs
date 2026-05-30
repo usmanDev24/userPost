@@ -5,24 +5,19 @@ import * as path from 'path';
 import serveFavicon from 'serve-favicon';
 import { default as logger } from 'morgan';
 import { default as cookieParser } from 'cookie-parser';
-import * as http from 'http';
+
 import { approotdir } from './approotdir.mjs';
 import { createStream } from 'rotating-file-stream';
 const __dirname = approotdir;
-import { 
-    normalizePort, onError, onListening, handle404, basicErrorHandler
-} from './appsupport.mjs';
+import { handle404 } from './appsupport.mjs';
 
 import passport from 'passport';
-import { router as indexRouter, initSocket as initIndex } from './routes/index.mjs';
-import { router as postsRouter , initSocket as initPostSocket } from './routes/posts.mjs';
+import { router as indexRouter } from './routes/index.mjs';
+import { router as postsRouter } from './routes/posts.mjs';
 import { initPassport, router as usersRouter, assetRouter as userAssestRouter } from './routes/users.mjs'
 import { default as DBG } from "debug";
 
 import { restoreSession } from './models/prisma-session.mjs';
-
-import { Server as IoServer } from 'socket.io';
-import { escape } from 'querystring';
 
 const debug = DBG('posts:debug');
 const dbgerror = DBG('posts:error')
@@ -38,7 +33,6 @@ hbs.registerHelper('eq', function (a, b) {
     return String(a) === String(b);
 });
 
-// uncomment after placing your favicon in /public
 app.use(serveFavicon(path.join(__dirname, "public", "assets", "favicon", "favicon.ico")));
 app.use(logger(process.env.REQUEST_LOG_FORMAT || 'dev', {
     stream: process.env.REQUEST_LOG_FILE ? createStream(process.env.REQUEST_LOG_FILE, {
@@ -63,10 +57,12 @@ initPassport(mainRouter)
 
 mainRouter.use(async (req, res, next) => {
     passport.authenticate('jwt', { session: false }, async (err, user, info) => {
+
         if (user) {
             passport.authenticate('jwt', { session: false, })(req, res, next)
         }
         else {
+            if (err) console.error(err)
             await restoreSession(req, res, next)
         }
     })(req, res, next)
@@ -91,46 +87,32 @@ app.use(mainRouter)
 // catch 404 and forward to error handler
 app.use(handle404)
 
-export const port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
-
-export const server = http.createServer(app);
-export const io = new IoServer(server, {transports: ["websocket"]})
-initIndex()
-initPostSocket()
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
-server.on('request', (req, res) => {
-    //debug(`${new Date().toISOString()} request ${req.method} ${req.url}`)
-})
-
-
-
-
-
-io.engine.use((req, res, next) => {
-    const isHandshake = req._query.sid === undefined;
-  if (isHandshake) {
-    cookieParser()(req, res, next)
-  } else {
-    next();
-  }
-})
-io.engine.use((req, res, next) => {
-   const isHandshake = req._query.sid === undefined;
-  if (isHandshake) {
-    passport.authenticate('jwt', { session: false }, async (err, user, info) => {
-        if (user) {
-            passport.authenticate('jwt', { session: false, })(req, res, next)
+export function setIo(io) {
+    io.engine.use((req, res, next) => {
+        const isHandshake = req._query.sid === undefined;
+        if (isHandshake) {
+            cookieParser()(req, res, next)
         } else {
-            next()
+            next();
         }
-    })(req, res, next)
-  } else {
-    next();
-  }
-})
+    })
+    io.engine.use((req, res, next) => {
+        const isHandshake = req._query.sid === undefined;
+        if (isHandshake) {
+            passport.authenticate('jwt', { session: false }, async (err, user, info) => {
+                if (user) {
+                    passport.authenticate('jwt', { session: false, })(req, res, next)
+                } else {
+                    if (err) console.error(err)
+                    next()
+                }
+            })(req, res, next)
+        } else {
+            next();
+        }
+    })
+
+}
 
 
 

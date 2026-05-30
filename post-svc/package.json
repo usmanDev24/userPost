@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "NODE_ENV=production dotenvx run -f .env.production  -- bun ./dist/app.mjs",
-    "dev": "NODE_ENV=development dotenvx run -f .env.development  -- cross-env DEBUG=posts* bun ./src/app.mjs",
+    "dev": "NODE_ENV=development dotenvx run -f .env.development  -- cross-env DEBUG=posts* bun ./src/server.mjs",
     "watch": "tailwindcss -i ./src/public/assets/stylesheets/input.css -o ./src/public/assets/stylesheets/styles.css --watch --minify",
     "prisma-dev": "dotenvx run --env-file=.env.development -- prisma --config=./src/prisma.config.ts",
     "prisma-pro": "NODE_ENV=production dotenvx run --env-file=.env.production -- prisma --config=./src/prisma.config.ts",
@@ -16,7 +16,8 @@
     "postbuild-pro": "NODE_ENV=production bun run prisma-pro migrate deploy && bun run init-catg-pro",
     "copy-assets": "cp -r src/public/assets dist/public; cp -r src/views dist/; cp -r src/partials dist/",
     "init-catg-pro": "dotenvx run --env-file=.env.production --overload -- bun ./dist/models/init-categories.mjs ",
-    "init-pics-pro": "NODE_ENV=production dotenvx run --env-file=.env.production -- bun ./dist/models/set-prisma-pics.mjs"
+    "init-pics-pro": "NODE_ENV=production dotenvx run --env-file=.env.production -- bun ./dist/models/set-prisma-pics.mjs",
+    "test": "NODE_ENV=development dotenvx run --env-file=.env.development -- bun vitest"
   },
   "author": "Usman Ghani",
   "license": "",
@@ -24,7 +25,6 @@
     "@dotenvx/dotenvx": "^1.68.1",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
-    "@socket.io/bun-engine": "^0.1.1",
     "bcryptjs": "^3.0.3",
     "connect-pg-simple": "^10.0.0",
     "cookie-parser": "^1.4.7",
@@ -64,14 +64,17 @@
     "@types/passport-jwt": "^4.0.1",
     "@types/pg": "^8.20.0",
     "@types/sanitize-html": "^2.16.1",
+    "@types/supertest": "^7.2.0",
     "bufferutil": "^4.1.0",
     "daisyui": "^5.5.20",
     "nodemon": "^3.1.14",
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "prisma": "^7.8.0",
+    "supertest": "^7.2.2",
     "tailwindcss": "^4.3.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.7"
   },
   "trustedDependencies": [
     "uWebSockets.js"

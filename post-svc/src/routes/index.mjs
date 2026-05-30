@@ -3,7 +3,6 @@ import * as express from "express";
 import { catgsStore } from "./posts.mjs";
 import PrismaPostsStore from "../models/posts-prisma.mjs";
 import { postsUsersStore } from "./users.mjs";
-import { io } from "../app.mjs";
 
 import { commentStore } from "./posts.mjs";
 export const router = express.Router();
@@ -12,7 +11,7 @@ export const postsStore = new PrismaPostsStore();
 import { PrimsaLikesStore } from "../models/likes-prisma.mjs";
 import { likeStore } from "./posts.mjs";
 
-export function initSocket() {
+export function initSocket(io) {
   io.of("/index").on("connection", async socket => {
     socket.emit("connected", "Socket connected")
     socket.on("join-room", async rooms => {

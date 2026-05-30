@@ -1,4 +1,5 @@
-import { port } from './app.mjs';
+import { port } from './server.mjs';
+import { server } from './server.mjs';
 import { default as DBG } from "debug";
 
 const debug =  DBG('posts:debug');
@@ -57,7 +58,7 @@ export function onError(error) {
 /**
  * Event listener for HTTP server "listening" event.
  */
-import { server } from './app.mjs';
+
 export function onListening() {
     const addr = server.address();
     const bind = typeof addr === 'string'
