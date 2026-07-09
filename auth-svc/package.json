@@ -13,7 +13,7 @@
     "prisma-dev": "dotenvx run -f .env.development -- bunx  --bun prisma --config=./src/prisma.config.ts",
     "app": "dotenvx run -f .env.development -- bun ./src/app.mjs",
     "build": "bunx --bun  prisma --config=./src/prisma.config.ts generate  && tsc",
-    "test": "dotenvx run -f .env.development -- bun test"
+    "test": "dotenvx run -f .env.development -- bun test --watch"
   },
   "author": "Usman Ghani",
   "license": "",

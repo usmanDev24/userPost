@@ -59,7 +59,7 @@ app.post("/create-user", async (c) => {
 app.post('/find-or-create', async (c) => {
   let user = await DBUsers.findUnique({
     where: { email: c.req.body.email }
-  });
+  }); 
   if (!user) {
     user = await createUser(c.req.body);
     if (!user) {

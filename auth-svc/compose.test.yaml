@@ -1,0 +1,61 @@
+services:
+  build-test:
+    build:
+      context: .
+      target: prerelease
+    command: ["bun", "run", "prisma-dev", "migrate", "dev"]
+    environment:
+      - DOTENV_PRIVATE_KEY_DEVELOPMENT
+    networks:
+      - testauth
+    depends_on: 
+      db-authsvc:
+        condition: service_healthy
+        
+  
+  test:
+    build:
+      context: .
+      target: prerelease
+    environment:
+      - DOTENV_PRIVATE_KEY_DEVELOPMENT
+    command: ['bun', 'run', 'test']
+    networks:
+      - testauth
+    depends_on: 
+      build-test:
+        condition: service_completed_successfully
+    develop:
+      watch:
+        - path: .
+          ignore:
+          - ./node_modules
+          - ./package.json
+          action: sync
+          target: /auth-svc/
+        - path: ./package.json
+          action: rebuild
+  
+  db-authsvc:
+    image: postgres:alpine
+
+    env_file:
+      - ./.env.test.docker
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 1s
+      timeout: 3s
+      retries: 1
+      start_period: 1s
+    networks: 
+      - testauth
+    volumes:
+      - test:/var/lib/postgresql
+  
+volumes:
+  test:
+networks:
+  testauth:
+
+    
+    
