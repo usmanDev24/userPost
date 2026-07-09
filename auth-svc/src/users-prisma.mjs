@@ -1,7 +1,5 @@
 import { prisma } from './lib/prisma.js';
-import { default as DBG } from 'debug'
-const log = DBG('users:prisma')
-const logErr = DBG('users:prisma_Error')
+
 export async function connectDB() {
   try {
     await prisma.$connect()
@@ -16,19 +14,19 @@ export async function disconnetDB() {
     console.error(error)
   }
 }
-export function userParams(req) {
+export function userParams(reqBody) {
   const params = {
-    username: req.body.username,
-    password_hash: req.body.password_hash,
-    provider: req.body.provider,
-    pid: req.body.pid,
-    displayName: req.body.displayName,
-    fullName: req.body.fullName,
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    email: req.body.email,
-    photoURL: req.body.photoURL,
-    photoType: req.body.photoType
+    username: reqBody.username,
+    password_hash: reqBody.password_hash,
+    provider: reqBody.provider,
+    pid: reqBody.pid,
+    displayName: reqBody.displayName,
+    fullName: reqBody.fullName,
+    firstName: reqBody.firstName,
+    lastName: reqBody.lastName,
+    email: reqBody.email,
+    photoURL: reqBody.photoURL,
+    photoType: reqBody.photoType
   }
   return params;
 }
@@ -69,10 +67,10 @@ export async function findOneUser(userId) {
   }
 }
 
-export async function createUser(req) {
+export async function createUser(body) {
   try {
     const user = await DBUsers.create({
-      data: userParams(req)
+      data: userParams(body)
     })
     const sanitized = sanitizedUser(user);
     return sanitized;

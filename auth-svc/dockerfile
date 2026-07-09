@@ -30,4 +30,4 @@ COPY . .
 RUN bun run build
 
 EXPOSE 5858
-CMD [ "dotenvx", "run" , "-f", ".env.production", "--", "bun", "./dist/user-server.mjs" ]
+CMD [ "dotenvx", "run" , "-f", ".env.production", "--", "bun", "./dist/app.mjs" ]

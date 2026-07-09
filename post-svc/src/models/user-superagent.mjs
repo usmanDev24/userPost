@@ -11,15 +11,10 @@ const saltRound = 10;
 async function genHash(password) {
   return await bcrypt.hash(password, saltRound)
 }
-var authid = process.env.USERS_AUTHID ;
-var authcode =process.env.USERS_AUTHCODE ;
 
-let AUTHTOKEN;
-function genJWT () {
-  if (AUTHTOKEN) return AUTHTOKEN;
-  AUTHTOKEN = sign(`${authid}:${authcode}`, process.env.USERS_TOKEN_PRIVATEKEY)
-  return AUTHTOKEN;
-}
+
+const AUTHTOKEN = process.env.USER_AUTHTOKEN
+
 
 function reqURL(path) {
   const requrl = new URL(process.env.USER_SERVICE_URL);
@@ -39,7 +34,7 @@ export async function create(username, password,
     })
     .set("Content-type", "application/json")
     .set("Accept", "application/json")
-    .auth(genJWT(), {type: "bearer"});
+    .auth(AUTHTOKEN, {type: "bearer"});
   return res.body
 }
 
@@ -55,7 +50,7 @@ export async function update(username, password,
     })
     .set("Content-type", "application/json")
     .set("Accept", "application/json")
-    .auth(genJWT(), {type: "bearer"});
+    .auth(AUTHTOKEN, {type: "bearer"});
   return res.body
 }
 
@@ -73,7 +68,7 @@ export async function findOrCreate(profile) {
       photoType: profile.photoType
     }).set('Content-Type', 'application/json')
     .set('Acccept', 'application/json')
-    .auth(genJWT(), {type: "bearer"});
+    .auth(AUTHTOKEN, {type: "bearer"});
   return res.body;
 }
 export async function passwordCheck(username, password) {
@@ -81,28 +76,28 @@ export async function passwordCheck(username, password) {
     .send({ username, password })
     .set("Content-type", "application/json")
     .set("Accept", "application/json")
-    .auth(genJWT(), {type: "bearer"});
+    .auth(AUTHTOKEN, {type: "bearer"});
   return res.body;
 }
 export async function destroy(username) {
   const res = await request.delete(reqURL(`/destroy/${username}`))
     .set('content-type', "application/json")
     .set("Accept", "application/json")
-    .auth(genJWT(), {type: "bearer"});
+    .auth(AUTHTOKEN, {type: "bearer"});
   return res.body;
 }
 export async function findUserName(username) {
   const res = await request.get(reqURL(`/find/username/${username}`))
     .set("Content-type", "application/json")
     .set("Accept", "application/json")
-    .auth(genJWT(), {type: "bearer"});
+    .auth(AUTHTOKEN, {type: "bearer"});
   return res.body;
 }
 export async function find(userId) {
   const res = await request.get(reqURL(`/find/${userId}`))
     .set("Content-type", "application/json")
     .set("Accept", "application/json")
-    .auth(genJWT(), {type: "bearer"});
+    .auth(AUTHTOKEN, {type: "bearer"});
   return res.body;
 }
 
@@ -110,14 +105,14 @@ export async function findEmail(email) {
   const res = await request.get(reqURL(`/find/email/${email}`))
     .set("Content-type", "application/json")
     .set("Accept", "application/json")
-    .auth(genJWT(), {type: "bearer"});
+    .auth(AUTHTOKEN, {type: "bearer"});
   return res.body;
 }
 export async function updatePhoto(id, photoURL, photoType) {
   const res= await request.post(reqURL(`/update-user/photo/${id}`))
     .set("Content-type", "application/json")
     .set("Accept", "application/json")
-    .auth(genJWT(), {type: "bearer"})
+    .auth(AUTHTOKEN, {type: "bearer"})
     .send({photoURL, photoType});
   return res.body;
 }
@@ -125,7 +120,7 @@ export async function list() {
   const res = await request.get(reqURL(`/list`))
     .set("Content-type", "application/json")
     .set("Accept", "application/json")
-    .auth(genJWT(), {type: "bearer"});
+    .auth(AUTHTOKEN, {type: "bearer"});
   return res.body;
 }
 
