@@ -13,6 +13,15 @@ COPY package.json bun.lock /temp/prod
 RUN --mount=type=cache,id=global-bun-cache,target=/root/.bun/install/cache \
     cd /temp/prod && bun install --frozen-lockfile --production
 
+FROM base AS test
+RUN mkdir /auth-svc
+WORKDIR /auth-svc
+COPY --from=install /temp/dev/node_modules  node_modules
+COPY . .
+RUN  bunx --bun  prisma --config=./src/prisma.config.ts generate
+EXPOSE 5859
+CMD [ "bun", "run", "test" ]
+
 FROM base AS prerelease
 RUN mkdir /auth-svc
 WORKDIR /auth-svc
