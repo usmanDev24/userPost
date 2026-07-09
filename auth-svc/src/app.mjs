@@ -61,7 +61,7 @@ app.post('/find-or-create', async (c) => {
     where: { email: c.req.body.email }
   });
   if (!user) {
-    user = await createUser(c.req);
+    user = await createUser(c.req.body);
     if (!user) {
       console.error("Error Creating User")
       return c.text("Error creating User", 500)
