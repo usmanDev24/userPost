@@ -18,16 +18,16 @@ RUN mkdir /auth-svc
 WORKDIR /auth-svc
 COPY --from=install /temp/dev/node_modules  node_modules
 COPY . .
-RUN bun run drizzlekit-dev generate
+RUN bun run build
 EXPOSE 5859
 CMD [ "bun", "run", "dev" ]
 
 FROM base AS release
 RUN apk update && apk add curl && curl -sfS https://dotenvx.sh | sh
 WORKDIR /usr/auth-svc
-COPY --from=install  /temp/prod/node_modules /usr/auth-svc/node_modules
-COPY . .
-RUN bun run build
-
+COPY ./package.json .
+COPY ./.env.production .
+COPY --from=install  /temp/prod/node_modules ./node_modules
+COPY --from=prerelease /auth-svc/dist ./dist
 EXPOSE 5858
 CMD [ "dotenvx", "run" , "-f", ".env.production", "--", "bun", "./dist/app.mjs" ]
