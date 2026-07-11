@@ -18,7 +18,7 @@ RUN mkdir /auth-svc
 WORKDIR /auth-svc
 COPY --from=install /temp/dev/node_modules  node_modules
 COPY . .
-RUN  bunx --bun  prisma --config=./src/prisma.config.ts generate
+RUN bun run drizzlekit-dev generate
 EXPOSE 5859
 CMD [ "bun", "run", "dev" ]
 

@@ -3,7 +3,7 @@ services:
     build: 
       context: ./auth-svc
     image: authsvc-prod:latest
-    command : ["bun", "run", "prisma-pro", "migrate", "deploy"]
+    command : ["bun", "run", "drizzlekit-prod", "migrate"]
     environment:
       - DOTENV_PRIVATE_KEY_PRODUCTION
     networks: 

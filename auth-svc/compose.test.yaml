@@ -3,7 +3,7 @@ services:
     build:
       context: .
       target: prerelease
-    command: ["bun", "run", "prisma-dev", "migrate", "dev"]
+    command: ["bun", "run", "drizzlekit-dev", "migrate"]
     environment:
       - DOTENV_PRIVATE_KEY_DEVELOPMENT
     networks:

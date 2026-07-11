@@ -1,18 +1,11 @@
 import { Hono } from "hono";
 import { logger } from "hono/logger";
-import {
-  DBUsers,
-  connectDB,
-  findOneUser,
-  createUser,
-  sanitizedUser,
-  userParams,
-} from "./users-prisma.mjs";
+import { UsersDataBase, sanitizedUser } from "./users-db.mjs";
 import bcrypt from "bcryptjs";
 import { jwt } from "hono/jwt";
 
 export const app = new Hono();
-
+const usersDb = new UsersDataBase()
 app.use(logger())
 
 app.use(
@@ -40,39 +33,30 @@ app.use(async (c, next) => {
 });
 
 app.get("/list", async (c) => {
-  let users = await DBUsers.findMany();
+  let users = await usersDb.findMany();
   users = users.map((user) => sanitizedUser(user));
   return c.json(users);
 });
 
 app.post("/create-user", async (c) => {
-  let isAlreadyUser = await DBUsers.findUnique({
-    where: { username: c.req.body.username },
-  });
+  let isAlreadyUser =  await usersDb.findUserName(c.req.body.username);
   if (isAlreadyUser) {
     return c.text("Already a User has username: " + c.req.body.username, 500);
   }
-  let result = await createUser(c.req.body);
-  return c.json(result);
+  const user = await usersDb.createUser(c.req.body);
+  return c.json(user);
 });
 
 app.post('/find-or-create', async (c) => {
-  let user = await DBUsers.findUnique({
-    where: { email: c.req.body.email }
-  }); 
-  if (!user) {
-    user = await createUser(c.req.body);
-    if (!user) {
-      console.error("Error Creating User")
-      return c.text("Error creating User", 500)
-    }
-    return c.json(user)
-  }
-  return c.json(user)
+  const user = await usersDb.findEmail(c.req.body.email)
+  if (user) return c.json(user);
+
+  const newUser = await usersDb.createUser(c.req.body);
+  return c.json(newUser);
 });
 
 app.get('/find/:userId', async (c) => {
-  let user = await findOneUser(c.req.param().userId)
+  let user = await usersDb.find(c.req.param().userId)
   if (user) {
     return c.json(user)
   } else {
@@ -82,13 +66,7 @@ app.get('/find/:userId', async (c) => {
 })
 
 app.get('/find/email/:email', async (c) => {
-  let user = await DBUsers.findUnique({
-    where: {
-      email: c.req.param().email
-    },
-    omit: { password_hash: true }
-  })
-  
+  const user = await usersDb.findEmail(c.req.param().email)
   if (user) {
     return c.json(user)
   } else {
@@ -97,11 +75,7 @@ app.get('/find/email/:email', async (c) => {
 })
 
 app.get('/find/username/:username', async (c) => {
-  const user = await DBUsers.findUnique({
-    where: { username: c.req.param().username },
-    omit: { password_hash: true }
-  })
-  
+  const user = await usersDb.findUserName(c.req.param().username)
   if (user) {
     return c.json(user)
   } else {
@@ -110,47 +84,36 @@ app.get('/find/username/:username', async (c) => {
 })
 
 app.post('/update-user/photo/:id', async (c) => {
-  const user = await DBUsers.findUnique({ where: { id: c.req.param().id }})
+  const user = await usersDb.find(c.req.param().id)
   if (user) {
-    const newUser = await DBUsers.update({
-      where: { id: user.id },
-      data: { photoURL: c.req.body.photoURL, photoType: c.req.body.photoType },
-    })
-    return c.json(user)
+    const updated = await usersDb.updatePhoto(c.req.param().id, c.req.body.photoURL, c.req.body.photoType)
+    return c.json(updated)
   }
   return c.text("No such user", 404)
 })
 
 app.post('/update-user/:username', async (c) => {
-  let isUser = await findOneUser(c.req.param().username)
-  if (!isUser) {
+  const user = await usersDb.findUserName(c.req.param().username)
+  if (!user) {
     return c.text("No Such User: " + c.req.param().username)
   }
-  let update = c.req.body
-  await DBUsers.update({
-    data: update, where: {
-      username: c.req.param().username
-    }
-  })
-  const updated = await findOneUser(c.req.param().username);
-  return c.json(updated)
+  const updated = await usersDb.update(c.req.param().username, c.req.body)
+    return c.json(updated)
 })
 
 app.delete("/destroy/:username", async (c) => {
-  let user = await DBUsers.findUnique({ where: { username: c.req.param().username } })
+  const user = await usersDb.findUserName(c.req.param().username)
   if (!user) {
     return c.text("No Such User: " + c.req.param().username, 404)
   }
-  await DBUsers.delete({ where: { id: user.id } });
+  const deletedId = await usersDb.destroy(user.id);
   return c.json({success: true})
 })
 
 app.post('/password-check', async (c) => {
 
 
-  const user = await DBUsers.findUnique({
-    where: { username: c.req.body.username }
-  });
+  const user = await usersDb.getFull(c.req.body.username );
   let checked;
   if (!user) {
     checked = {
@@ -162,8 +125,7 @@ app.post('/password-check', async (c) => {
       check: false, username: c.req.body.username,
       message: "Could not find user"
     };
-  } else if (user.username === c.req.body.username
-    && await bcrypt.compare(c.req.body.password, user.password_hash)) {
+  } else if (bcrypt.compareSync(c.req.body.password, user.password_hash)) {
     checked = { check: true, username: user.username, id: user.id };
   } else {
     checked = {
