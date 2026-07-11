@@ -19,16 +19,17 @@ RUN mkdir /post-svc
 WORKDIR /post-svc
 COPY --from=install /temp/dev/node_modules  node_modules
 COPY . .
-RUN  bunx --bun  prisma --config=./src/prisma.config.ts generate
+RUN  bun run build
 EXPOSE 3000
 CMD [ "bun", "run", "dev" ]
 
 FROM base AS release
 RUN apk update && apk add curl && curl -sfS https://dotenvx.sh | sh
 WORKDIR /usr/post-svc
-COPY --from=install  /temp/prod/node_modules /usr/post-svc/node_modules
-COPY . .
-RUN bun run build
+COPY ./package.json .
+COPY ./.env.production .
+COPY --from=install  /temp/prod/node_modules ./node_modules
+COPY --from=prerelease /post-svc/dist ./dist
 
 EXPOSE 3000
 CMD [ "dotenvx", "run" , "-f", ".env.production", "--", "bun", "./dist/server.mjs" ]
